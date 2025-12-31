@@ -1,0 +1,95 @@
+name: Update Etsy Listings
+
+on:
+  schedule:
+    # Run once a day at 9:00 UTC
+    - cron: "0 9 * * *"
+  workflow_dispatch:       # lets you run it manually from the Actions tab
+
+jobs:
+  update-listings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm install node-fetch@3
+
+      - name: Fetch Etsy listings
+        env:
+          ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
+          ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
+        run: |
+          node << 'EOF'
+          import fetch from "node-fetch";
+          import { writeFileSync, mkdirSync } from "fs";
+
+          const apiKey = process.env.ETSY_API_KEYSTRING;
+          const shopId = process.env.ETSY_SHOP_ID;
+
+          if (!apiKey || !shopId) {
+            console.error("Missing ETSY_API_KEYSTRING or ETSY_SHOP_ID");
+            process.exit(1);
+          }
+
+          const url = `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active`;
+
+          async function main() {
+            const res = await fetch(url, {
+              headers: {
+                "x-api-key": apiKey,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (!res.ok) {
+              console.error("Etsy API error:", res.status, await res.text());
+              process.exit(1);
+            }
+
+            const data = await res.json();
+
+            const items = Array.isArray(data) ? data : (data.results || []);
+
+            const simplified = items.map((item) => ({
+              listing_id: item.listing_id,
+              title: item.title,
+              description: item.description,
+              price: item.price,
+              currency_code: item.currency_code,
+              url: item.url,
+              primary_image:
+                (item.images && item.images[0] && item.images[0].url_fullxfull) ||
+                (item.primary_image && item.primary_image.url_fullxfull) ||
+                null,
+            }));
+
+            mkdirSync("data", { recursive: true });
+            writeFileSync("data/etsy-listings.json", JSON.stringify(simplified, null, 2));
+            console.log(`Wrote ${simplified.length} listings to data/etsy-listings.json`);
+          }
+
+          main().catch((e) => {
+            console.error(e);
+            process.exit(1);
+          });
+          EOF
+
+      - name: Commit and push updated JSON
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/etsy-listings.json
+            git commit -m "Update Etsy listings"
+            git push
+          else
+            echo "No changes to commit."
+          fi
