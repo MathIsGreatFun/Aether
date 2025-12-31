@@ -2,10 +2,209 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My Etsy Shop</title>
+  <title>Aether Instruments – Etsy Listings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #222;
+      background: #f5f5f5;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem 1.5rem 3rem;
+      max-width: 1000px;
+      margin-inline: auto;
+      background: #f5f5f5;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    #error {
+      color: darkred;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    #listings-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .listing-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .listing-image-wrapper {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .listing-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .listing-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .listing-price {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-top: auto;
+    }
+
+    .listing-link {
+      margin-top: 0.4rem;
+      font-size: 0.9rem;
+      text-decoration: none;
+      color: #0b6efd;
+    }
+
+    .listing-link:hover {
+      text-decoration: underline;
+    }
+
+    .loading {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding-inline: 1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>My Etsy Listings</h1>
-  <div id="listings-container">Listings will appear here.</div>
+  <header>
+    <h1>Aether Instruments – Current Etsy Listings</h1>
+    <p class="subtitle">
+      This page shows your active Etsy listings, refreshed automatically by GitHub Actions.
+    </p>
+  </header>
+
+  <div id="error"></div>
+  <div id="listings-container" class="loading">Loading listings…</div>
+
+  <script>
+    async function loadListings() {
+      const errorDiv = document.getElementById("error");
+      const container = document.getElementById("listings-container");
+
+      errorDiv.textContent = "";
+      container.textContent = "Loading listings…";
+
+      try {
+        // Path is relative to index.html; works for https://mathisgreatfun.github.io/Aether/
+        const res = await fetch("data/etsy-listings.json?" + Date.now()); // cache-bust
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch listings");
+        }
+
+        const listings = await res.json();
+
+        if (!Array.isArray(listings) || listings.length === 0) {
+          container.textContent = "No active listings found.";
+          return;
+        }
+
+        container.innerHTML = "";
+
+        listings.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "listing-card";
+
+          // Image
+          const imageWrapper = document.createElement("div");
+          imageWrapper.className = "listing-image-wrapper";
+          if (item.primary_image) {
+            const img = document.createElement("img");
+            img.src = item.primary_image;
+            img.alt = item.title || "Etsy listing";
+            imageWrapper.appendChild(img);
+          } else {
+            imageWrapper.textContent = "No image";
+          }
+          card.appendChild(imageWrapper);
+
+          // Title
+          const title = document.createElement("div");
+          title.className = "listing-title";
+          title.textContent = item.title || "Untitled listing";
+          card.appendChild(title);
+
+          // Price
+          const price = document.createElement("div");
+          price.className = "listing-price";
+          if (item.price) {
+            const currency = item.currency_code || "";
+            price.textContent = `${item.price} ${currency}`.trim();
+          } else {
+            price.textContent = "Price unavailable";
+          }
+          card.appendChild(price);
+
+          // Link to Etsy
+          if (item.url) {
+            const link = document.createElement("a");
+            link.className = "listing-link";
+            link.href = item.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "View on Etsy";
+            card.appendChild(link);
+          }
+
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        errorDiv.textContent = "Error loading Etsy listings.";
+        container.textContent = "";
+      }
+    }
+
+    loadListings();
+  </script>
 </body>
 </html>
