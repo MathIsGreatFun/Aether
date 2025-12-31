@@ -27,11 +27,18 @@ jobs:
           ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
           ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
         run: |
+                - name: Fetch Etsy listings
+        env:
+          ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
+          ETSY_SHARED_SECRET: ${{ secrets.ETSY_SHARED_SECRET }}
+          ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
+        run: |
           node << 'EOF'
           import fetch from "node-fetch";
           import { writeFileSync, mkdirSync } from "fs";
 
           const apiKey = process.env.ETSY_API_KEYSTRING;
+          const sharedSecret = process.env.ETSY_SHARED_SECRET;
           const shopId = process.env.ETSY_SHOP_ID;
 
           if (!apiKey || !shopId) {
@@ -39,48 +46,105 @@ jobs:
             process.exit(1);
           }
 
-          const url = `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active`;
+          // Use keystring:shared_secret if we have a shared secret, otherwise just keystring
+          const headers = {
+            "x-api-key": sharedSecret ? `${apiKey}:${sharedSecret}` : apiKey,
+            "Content-Type": "application/json",
+          };
 
-          async function main() {
-            const res = await fetch(url, {
-              headers: {
-                "x-api-key": apiKey,
-                "Content-Type": "application/json",
-              },
-            });
-
+          async function fetchJson(url) {
+            const res = await fetch(url, { headers });
             if (!res.ok) {
               console.error("Etsy API error:", res.status, await res.text());
               process.exit(1);
             }
+            return res.json();
+          }
 
-            const data = await res.json();
+          function formatMoney(money) {
+            if (!money || typeof money !== "object") {
+              return { price: null, currency_code: null };
+            }
+            const amount = Number(money.amount);
+            const divisor = Number(money.divisor || 100);
+            const currency_code = money.currency_code || null;
 
-            const items = Array.isArray(data) ? data : (data.results || []);
+            if (Number.isNaN(amount) || Number.isNaN(divisor) || divisor === 0) {
+              return { price: null, currency_code };
+            }
 
-            const simplified = items.map((item) => ({
-              listing_id: item.listing_id,
-              title: item.title,
-              description: item.description,
-              price: item.price,
-              currency_code: item.currency_code,
-              url: item.url,
-              primary_image:
-                (item.images && item.images[0] && item.images[0].url_fullxfull) ||
-                (item.primary_image && item.primary_image.url_fullxfull) ||
-                null,
-            }));
+            const value = amount / divisor;
+            return {
+              price: value.toFixed(2),
+              currency_code,
+            };
+          }
+
+          async function main() {
+            // 1) Get active listings (to get listing_ids)
+            const activeUrl =
+              `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100`;
+            const activeData = await fetchJson(activeUrl);
+            const activeResults = Array.isArray(activeData)
+              ? activeData
+              : (activeData.results || []);
+
+            const listingIds = activeResults
+              .map((l) => l.listing_id)
+              .filter((id) => !!id);
+
+            if (listingIds.length === 0) {
+              console.log("No active listings found.");
+              mkdirSync("data", { recursive: true });
+              writeFileSync("data/etsy-listings.json", "[]");
+              return;
+            }
+
+            // 2) Get full listing data + images in one batch call
+            const batchUrl =
+              `https://openapi.etsy.com/v3/application/listings/batch` +
+              `?includes=Images&listing_ids=${listingIds.join(",")}`;
+
+            const batchData = await fetchJson(batchUrl);
+            const items = Array.isArray(batchData)
+              ? batchData
+              : (batchData.results || []);
+
+            const simplified = items.map((item) => {
+              const { price, currency_code } = formatMoney(item.price);
+
+              const primaryImage =
+                item.images &&
+                item.images[0] &&
+                item.images[0].url_fullxfull
+                  ? item.images[0].url_fullxfull
+                  : null;
+
+              return {
+                listing_id: item.listing_id,
+                title: item.title,
+                description: item.description,
+                url: item.url,
+                price,
+                currency_code,
+                primary_image: primaryImage,
+              };
+            });
 
             mkdirSync("data", { recursive: true });
-            writeFileSync("data/etsy-listings.json", JSON.stringify(simplified, null, 2));
+            writeFileSync(
+              "data/etsy-listings.json",
+              JSON.stringify(simplified, null, 2)
+            );
             console.log(`Wrote ${simplified.length} listings to data/etsy-listings.json`);
           }
 
-          main().catch((e) => {
-            console.error(e);
+          main().catch((err) => {
+            console.error(err);
             process.exit(1);
           });
           EOF
+
 
       - name: Commit and push updated JSON
         run: |
