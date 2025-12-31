@@ -16,14 +16,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install deps
-        run: npm install node-fetch@3
-
       - name: Fetch Etsy listings
         env:
           ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
@@ -31,7 +23,6 @@ jobs:
           ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
         run: |
           node << 'EOF'
-          import fetch from "node-fetch";
           import { writeFileSync, mkdirSync } from "fs";
 
           const apiKey = process.env.ETSY_API_KEYSTRING;
@@ -43,6 +34,7 @@ jobs:
             process.exit(1);
           }
 
+          // Node 20 has global fetch, no need for node-fetch
           const headers = {
             "x-api-key": sharedSecret ? `${apiKey}:${sharedSecret}` : apiKey,
             "Content-Type": "application/json",
@@ -62,18 +54,17 @@ jobs:
             if (!str) return "";
             let s = String(str);
 
-            // Handle double-escaped &amp;quot;, numeric forms, etc.
+            // Handle &quot; / &amp;quot; / &#34; etc.
             s = s.replace(/&amp;quot;/g, '"');
             s = s.replace(/&quot;/g, '"');
             s = s.replace(/&#34;/g, '"');
             s = s.replace(/&amp;#34;/g, '"');
 
+            // Handle apostrophes too
             s = s.replace(/&amp;apos;/g, "'");
             s = s.replace(/&apos;/g, "'");
             s = s.replace(/&#39;/g, "'");
             s = s.replace(/&amp;#39;/g, "'");
-
-            // You can add more replacements here if Etsy uses other entities
 
             return s;
           }
@@ -159,12 +150,13 @@ jobs:
 
       - name: Commit and push updated JSON
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
+          # Only commit if data/etsy-listings.json actually changed
+          if git diff --quiet data/etsy-listings.json; then
+            echo "No changes in data/etsy-listings.json; nothing to commit."
+          else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/etsy-listings.json
             git commit -m "Update Etsy listings"
             git push
-          else
-            echo "No changes to commit."
           fi
