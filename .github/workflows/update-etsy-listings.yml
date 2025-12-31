@@ -2,9 +2,11 @@ name: Update Etsy Listings
 
 on:
   schedule:
-    # Run once a day at 9:00 UTC
-    - cron: "0 9 * * *"
-  workflow_dispatch:       # lets you run it manually from the Actions tab
+    - cron: "0 9 * * *"   # once per day at 09:00 UTC
+  workflow_dispatch:       # allow manual runs
+
+permissions:
+  contents: write          # allow pushing commits
 
 jobs:
   update-listings:
@@ -25,11 +27,6 @@ jobs:
       - name: Fetch Etsy listings
         env:
           ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
-          ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
-        run: |
-                - name: Fetch Etsy listings
-        env:
-          ETSY_API_KEYSTRING: ${{ secrets.ETSY_API_KEYSTRING }}
           ETSY_SHARED_SECRET: ${{ secrets.ETSY_SHARED_SECRET }}
           ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
         run: |
@@ -46,7 +43,6 @@ jobs:
             process.exit(1);
           }
 
-          // Use keystring:shared_secret if we have a shared secret, otherwise just keystring
           const headers = {
             "x-api-key": sharedSecret ? `${apiKey}:${sharedSecret}` : apiKey,
             "Content-Type": "application/json",
@@ -62,57 +58,46 @@ jobs:
           }
 
           function formatMoney(money) {
-            if (!money || typeof money !== "object") {
-              return { price: null, currency_code: null };
-            }
+            if (!money || typeof money !== "object") return { price: null, currency_code: null };
             const amount = Number(money.amount);
             const divisor = Number(money.divisor || 100);
             const currency_code = money.currency_code || null;
-
-            if (Number.isNaN(amount) || Number.isNaN(divisor) || divisor === 0) {
+            if (Number.isNaN(amount) || Number.isNaN(divisor) || divisor === 0)
               return { price: null, currency_code };
-            }
-
-            const value = amount / divisor;
             return {
-              price: value.toFixed(2),
+              price: (amount / divisor).toFixed(2),
               currency_code,
             };
           }
 
           async function main() {
-            // 1) Get active listings (to get listing_ids)
+            // 1) Get active listing IDs
             const activeUrl =
               `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100`;
             const activeData = await fetchJson(activeUrl);
             const activeResults = Array.isArray(activeData)
               ? activeData
               : (activeData.results || []);
+            const listingIds = activeResults.map(l => l.listing_id).filter(Boolean);
 
-            const listingIds = activeResults
-              .map((l) => l.listing_id)
-              .filter((id) => !!id);
-
-            if (listingIds.length === 0) {
-              console.log("No active listings found.");
+            if (!listingIds.length) {
               mkdirSync("data", { recursive: true });
               writeFileSync("data/etsy-listings.json", "[]");
+              console.log("No listings found.");
               return;
             }
 
-            // 2) Get full listing data + images in one batch call
+            // 2) Fetch listings WITH images
             const batchUrl =
               `https://openapi.etsy.com/v3/application/listings/batch` +
               `?includes=Images&listing_ids=${listingIds.join(",")}`;
-
             const batchData = await fetchJson(batchUrl);
             const items = Array.isArray(batchData)
               ? batchData
               : (batchData.results || []);
 
-            const simplified = items.map((item) => {
+            const simplified = items.map(item => {
               const { price, currency_code } = formatMoney(item.price);
-
               const primaryImage =
                 item.images &&
                 item.images[0] &&
@@ -136,15 +121,14 @@ jobs:
               "data/etsy-listings.json",
               JSON.stringify(simplified, null, 2)
             );
-            console.log(`Wrote ${simplified.length} listings to data/etsy-listings.json`);
+            console.log(`Wrote ${simplified.length} listings.`);
           }
 
-          main().catch((err) => {
+          main().catch(err => {
             console.error(err);
             process.exit(1);
           });
           EOF
-
 
       - name: Commit and push updated JSON
         run: |
