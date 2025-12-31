@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aether Instruments Virtual Tongue Drum</title>
+
+<style>
+:root{
+  --bg:#0b1020; --card:#121a33; --text:#e9eeff; --muted:#aab4e6;
+  --line:rgba(255,255,255,.10); --hot:rgba(122,162,255,.55);
+}
+body{
+  margin:0; font-family:system-ui,Segoe UI,Roboto,Arial;
+  background:radial-gradient(1000px 600px at 20% 0%, #16204a 0%, var(--bg) 55%);
+  color:var(--text);
+}
+.wrap{max-width:1160px;margin:0 auto;padding:22px;}
+h1{margin:0 0 10px;font-size:26px;font-weight:800;text-align:center}
+p{margin:0 0 18px;color:var(--muted);line-height:1.35;text-align:center}
+.grid{display:grid;grid-template-columns:1.3fr .9fr;gap:14px}
+@media (max-width:980px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(18,26,51,.9);border:1px solid var(--line);border-radius:16px;padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
+.btn{border:1px solid var(--line);background:rgba(122,162,255,.14);color:var(--text);border-radius:12px;padding:9px 12px;cursor:pointer}
+.btn:hover{background:rgba(122,162,255,.22)}
+.btn:active{transform:translateY(1px)}
+.sep{height:1px;background:var(--line);margin:12px 0}
+.keys{display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
+.oct{margin:12px 0 8px;font-size:12px;color:var(--muted)}
+.key{
+  user-select:none;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,.05);
+}
+.key.sel{border-color:var(--hot);box-shadow:0 0 0 2px rgba(122,162,255,.12) inset}
+.drumWrap{display:flex;justify-content:center}
+svg{max-width:100%}
+.tongue{cursor:pointer}
+.tongue.off{opacity:.2}
+.tongue.playing{filter:brightness(1.25)}
+.label{font:700 14px system-ui;fill:#e9eeff}
+.labelMuted{font:650 14px system-ui;fill:#aab4e6}
+.toast{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+  background:rgba(18,26,51,.96); border:1px solid var(--line);
+  padding:10px 12px; border-radius:12px; color:var(--text);
+  font-size:13px; opacity:0; pointer-events:none;
+  transition:opacity .18s ease;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>Aether Instruments Virtual Tongue Drum</h1>
+  <p>Please select 10 notes. Press numbers 1 through 0 on the keyboard, or click on the tongues to play the corresponding notes.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="row">
+        <div class="pill" id="countPill">Selected: 0 / 10</div>
+        <button class="btn" id="clear">Clear</button>
+        <button class="btn" id="playSeq">Play 1→10</button>
+        <button class="btn" id="transposeDown">Transpose -1</button>
+        <button class="btn" id="transposeUp">Transpose +1</button>
+        <button class="btn" id="copyLink">Copy share link</button>
+      </div>
+      <div class="sep"></div>
+      <div id="picker"></div>
+    </div>
+
+    <div class="card">
+      <div class="drumWrap" id="drumHost"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+(() => {
+  const MAX_NOTES = 10;
+
+  // Chromatic notes (sharps only)
+  const CHROMA = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const SEMI   = {"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11};
+
+  // NEW RANGE: D3 .. B5  (C3 and C#3 are no longer valid)
+  const MIN_NOTE = "D3";
+  const MAX_NOTE = "B5";
+
+  // Perimeter placement (pad 2 → pad 10)
+  // Angles measured from UP (0°) going COUNTER-CLOCKWISE.
+  const PERIM_ANGLES_UP_CCW = [200,160,240,120,280,80,320,40,0];
+
+  function noteToMidi(n){
+    const m = n.match(/^([A-G]#?)(\d)$/);
+    return m ? ((Number(m[2])+1)*12 + SEMI[m[1]]) : null;
+  }
+
+  function midiToNote(m){
+    const name = CHROMA[m % 12];
+    const oct  = Math.floor(m / 12) - 1;
+    return name + oct;
+  }
+
+  function minMidi(){ return noteToMidi(MIN_NOTE); }
+  function maxMidi(){ return noteToMidi(MAX_NOTE); }
+
+  // -----------------------------
+  // Sample playback (.mp3) + anti-distortion chain + polyphony limit
+  // -----------------------------
+  let audio = null;
+  let masterGain = null;
+  let compressor = null;
+
+  const sampleCache = new Map(); // note -> AudioBuffer
+
+  const MAX_VOICES = 8;
+  const activeVoices = []; // currently playing BufferSource nodes
+
+  function ensureAudio(){
+    if (!audio) {
+      audio = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Master chain: voices -> masterGain -> compressor -> destination
+      masterGain = audio.createGain();
+      masterGain.gain.value = 0.45;  // tweak if needed
+
+      compressor = audio.createDynamicsCompressor();
+      compressor.threshold.value = -18;
+      compressor.knee.value = 24;
+      compressor.ratio.value = 8;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.15;
+
+      masterGain.connect(compressor);
+      compressor.connect(audio.destination);
+    }
+    if (audio.state === "suspended") audio.resume();
+  }
+
+  // Files now .mp3, one per note, e.g., "D3.mp3", "F#4.mp3"
+  function sampleUrl(note){
+    return "samples/" + encodeURIComponent(note) + ".mp3";
+  }
+
+  async function loadSample(note){
+    if (sampleCache.has(note)) return sampleCache.get(note);
+
+    ensureAudio();
+    const url = sampleUrl(note);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Missing sample: " + url);
+
+    const arr = await res.arrayBuffer();
+    const buf = await audio.decodeAudioData(arr);
+    sampleCache.set(note, buf);
+    return buf;
+  }
+
+  async function playNote(note){
+    if (!note) return;
+    ensureAudio();
+
+    const buf = await loadSample(note);
+    const now = audio.currentTime;
+
+    const src = audio.createBufferSource();
+    src.buffer = buf;
+
+    const g = audio.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(1.0, now + 0.008);
+    g.gain.linearRampToValueAtTime(0.0001, now + Math.min(1.8, buf.duration));
+
+    src.connect(g);
+    g.connect(masterGain);
+
+    activeVoices.push(src);
+    src.onended = () => {
+      const i = activeVoices.indexOf(src);
+      if (i >= 0) activeVoices.splice(i, 1);
+    };
+    while (activeVoices.length > MAX_VOICES) {
+      const oldest = activeVoices.shift();
+      try { oldest.stop(); } catch {}
+    }
+
+    src.start(now);
+    src.stop(now + buf.duration + 0.05);
+  }
+
+  // -----------------------------
+  // State: selection set + pad assignment sorted by frequency
+  // -----------------------------
+  const selectedSet = new Set();
+  let padNotes = []; // sorted ascending frequency
+
+  function recomputePads(){
+    padNotes = [...selectedSet]
+      .sort((a,b) => (noteToMidi(a) ?? 1e9) - (noteToMidi(b) ?? 1e9))
+      .slice(0, MAX_NOTES);
+  }
+
+  // -----------------------------
+  // Share link helpers
+  // -----------------------------
+  function currentShareURL(){
+    recomputePads();
+    const u = new URL(location.href);
+    if (padNotes.length) u.searchParams.set("notes", padNotes.join("-"));
+    else u.searchParams.delete("notes");
+    return u.toString();
+  }
+
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(() => t.classList.remove("show"), 1200);
+  }
+
+  async function copyShareLink(){
+    const link = currentShareURL();
+    try{
+      await navigator.clipboard.writeText(link);
+      showToast("Copied share link!");
+    } catch {
+      window.prompt("Copy this link:", link);
+    }
+  }
+
+  // -----------------------------
+  // Transpose selection by semitones (with bounds)
+  // -----------------------------
+  function transposeSelection(semitones){
+    if (!selectedSet.size) return;
+
+    const arr = [...selectedSet].map(n => noteToMidi(n)).filter(m => m != null);
+    const lo = minMidi();
+    const hi = maxMidi();
+
+    // Check if ANY note would go out of range; if so, block the whole move.
+    const wouldClip = arr.some(m => {
+      const cand = m + semitones;
+      return cand < lo || cand > hi;
+    });
+
+    if (wouldClip){
+      showToast("Cannot transpose further in that direction.");
+      return;
+    }
+
+    const newSet = new Set();
+    arr.forEach(m => {
+      const cand = m + semitones;
+      newSet.add(midiToNote(cand));
+    });
+
+    selectedSet.clear();
+    newSet.forEach(n => selectedSet.add(n));
+    render();
+  }
+
+  // -----------------------------
+  // Init from URL ?notes=...
+  // -----------------------------
+  function initFromURL(){
+    const qs = new URLSearchParams(location.search);
+    const raw = qs.get("notes");
+    if (!raw) return;
+
+    const parts = raw.split(/[-,]/).map(s => s.trim()).filter(Boolean);
+
+    selectedSet.clear();
+    for (const n of parts){
+      const m = noteToMidi(n);
+      if (m == null) continue;
+      if (m < minMidi() || m > maxMidi()) continue; // respect D3..B5
+      selectedSet.add(n);
+      if (selectedSet.size >= MAX_NOTES) break;
+    }
+  }
+
+  // -----------------------------
+  // UI: Picker
+  // -----------------------------
+  const picker   = document.getElementById("picker");
+  const drumHost = document.getElementById("drumHost");
+  const countPill= document.getElementById("countPill");
+
+  function buildPicker(){
+    picker.innerHTML = "";
+    for (let oct = 3; oct <= 5; oct++){
+      const o = document.createElement("div");
+      o.className = "oct";
+      o.textContent = "Octave " + oct;
+      picker.appendChild(o);
+
+      const grid = document.createElement("div");
+      grid.className = "keys";
+
+      CHROMA.forEach(n => {
+        const note = n + oct;
+
+        const m = noteToMidi(note);
+        // Only allow D3..B5; this automatically excludes C3 and C#3
+        if (m == null || m < minMidi() || m > maxMidi()) {
+          grid.appendChild(document.createElement("div"));
+          return;
+        }
+
+        const k = document.createElement("div");
+        k.className = "key" + (selectedSet.has(note) ? " sel" : "");
+        k.textContent = note;
+        k.onclick = () => {
+          ensureAudio(); // unlock on first interaction
+          if (selectedSet.has(note)) selectedSet.delete(note);
+          else if (selectedSet.size < MAX_NOTES) selectedSet.add(note);
+          render();
+        };
+        grid.appendChild(k);
+      });
+
+      picker.appendChild(grid);
+    }
+  }
+
+  // -----------------------------
+  // Drum (all circular pads)
+  // -----------------------------
+  function buildDrum(){
+    const W = 520, cx = W/2, cy = W/2;
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttribute("viewBox","0 0 520 520");
+
+    const base = document.createElementNS(svg.namespaceURI,"circle");
+    base.setAttribute("cx",cx); base.setAttribute("cy",cy); base.setAttribute("r",235);
+    base.setAttribute("fill","rgba(255,255,255,.06)");
+    base.setAttribute("stroke","rgba(255,255,255,.10)");
+    base.setAttribute("stroke-width","1.2");
+    svg.appendChild(base);
+
+    const tongues = [];
+    const rMid = 185;
+
+    // Pad 1: center
+    tongues.push({ pad:1, x:cx, y:cy });
+
+    // Pads 2..10: perimeter by your custom angle order
+    PERIM_ANGLES_UP_CCW.forEach((deg, i) => {
+      const theta = deg * Math.PI / 180;
+      const x = cx + rMid * Math.sin(theta);
+      const y = cy - rMid * Math.cos(theta);
+      tongues.push({ pad:i+2, x, y });
+    });
+
+    tongues.forEach(t => {
+      const g = document.createElementNS(svg.namespaceURI,"g");
+      g.classList.add("tongue");
+
+      const circ = document.createElementNS(svg.namespaceURI,"circle");
+      circ.setAttribute("cx", t.x);
+      circ.setAttribute("cy", t.y);
+      circ.setAttribute("r", t.pad === 1 ? 50 : 38);
+      circ.setAttribute("fill","rgba(255,255,255,.12)");
+      circ.setAttribute("stroke","rgba(255,255,255,.14)");
+      circ.setAttribute("stroke-width","1.2");
+      g.appendChild(circ);
+
+      const lab = document.createElementNS(svg.namespaceURI,"text");
+      lab.setAttribute("x", t.x);
+      lab.setAttribute("y", t.y + 5);
+      lab.setAttribute("text-anchor","middle");
+      lab.classList.add("labelMuted");
+      g.appendChild(lab);
+
+      g.onclick = async () => {
+        ensureAudio();
+        const n = padNotes[t.pad - 1];
+        if (!n) return;
+        g.classList.add("playing");
+        setTimeout(() => g.classList.remove("playing"), 90);
+        try { await playNote(n); } catch (e) { console.warn(e); }
+      };
+
+      t.el = g;
+      t.lab = lab;
+      svg.appendChild(g);
+    });
+
+    drumHost.innerHTML = "";
+    drumHost.appendChild(svg);
+    return tongues;
+  }
+
+  let tongues = null;
+
+  function syncDrum(){
+    if (!tongues) tongues = buildDrum();
+    tongues.forEach(t => {
+      const n = padNotes[t.pad - 1];
+      t.lab.textContent = n || "";
+      t.lab.setAttribute("class", n ? "label" : "labelMuted");
+      t.el.classList.toggle("off", !n);
+    });
+  }
+
+  // -----------------------------
+  // Keyboard mapping: 1..9 => pads 1..9, 0 => pad 10
+  // -----------------------------
+  window.addEventListener("keydown", async (e) => {
+    const tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+
+    const k = e.key;
+    let pad = null;
+    if (k >= "1" && k <= "9") pad = Number(k);
+    else if (k === "0") pad = 10;
+    else return;
+
+    const n = padNotes[pad - 1];
+    if (!n) return;
+
+    ensureAudio();
+    try { await playNote(n); } catch (err) { console.warn(err); }
+  });
+
+  // -----------------------------
+  // Controls
+  // -----------------------------
+  document.getElementById("clear").onclick = () => {
+    selectedSet.clear();
+    render();
+  };
+
+  document.getElementById("playSeq").onclick = async () => {
+    ensureAudio();
+    for (let i = 0; i < padNotes.length; i++){
+      try { await playNote(padNotes[i]); } catch (e) { console.warn(e); }
+      await new Promise(r => setTimeout(r, 220));
+    }
+  };
+
+  document.getElementById("copyLink").onclick = async () => {
+    await copyShareLink();
+  };
+
+  document.getElementById("transposeDown").onclick = () => {
+    transposeSelection(-1);
+  };
+
+  document.getElementById("transposeUp").onclick = () => {
+    transposeSelection(1);
+  };
+
+  function render(){
+    recomputePads();
+    countPill.textContent = `Selected: ${selectedSet.size} / 10`;
+    buildPicker();
+    syncDrum();
+  }
+
+  // Boot: read scale from URL first, then render
+  initFromURL();
+  render();
+})();
+</script>
+</body>
+</html>
