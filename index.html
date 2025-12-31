@@ -1,16 +1,26 @@
 <script>
-  // Safely decode HTML entities (handles double-escaped text too)
+  // Decode HTML entities, plus aggressively normalize common ones like &quot;
   function decodeHtml(html) {
     if (!html) return "";
+    let s = String(html);
+
+    // Manual fixes for common patterns (covers many weird cases)
+    s = s.replace(/&amp;quot;/g, '"'); // &amp;quot; -> "
+    s = s.replace(/&quot;/g, '"');    // &quot;    -> "
+    s = s.replace(/&#34;/g, '"');     // numeric double-quote
+    s = s.replace(/&apos;/g, "'");    // &apos;    -> '
+    s = s.replace(/&#39;/g, "'");     // numeric single-quote
+
+    // Generic HTML decode loop, in case there are other entities
     const txt = document.createElement("textarea");
-    let prev = html;
-    let curr = html;
+    let prev = s;
+    let curr = s;
 
     do {
       prev = curr;
       txt.innerHTML = prev;
       curr = txt.value;
-    } while (curr !== prev);   // stop when decoding no longer changes it
+    } while (curr !== prev); // stop when decoding no longer changes it
 
     return curr;
   }
@@ -61,6 +71,17 @@
         title.className = "listing-title";
         title.textContent = decodeHtml(item.title || "Untitled listing");
         card.appendChild(title);
+
+        // ---- (Optional) Description ----
+        // If you want the description visible, uncomment this block:
+        /*
+        if (item.description) {
+          const desc = document.createElement("div");
+          desc.className = "listing-description";
+          desc.textContent = decodeHtml(item.description);
+          card.appendChild(desc);
+        }
+        */
 
         // ---- Price ----
         const price = document.createElement("div");
