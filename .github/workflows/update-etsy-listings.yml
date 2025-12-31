@@ -57,13 +57,37 @@ jobs:
             return res.json();
           }
 
+          // Fix common HTML entity encodings from Etsy (including double-escaped)
+          function decodeEntities(str) {
+            if (!str) return "";
+            let s = String(str);
+
+            // Handle double-escaped &amp;quot;, numeric forms, etc.
+            s = s.replace(/&amp;quot;/g, '"');
+            s = s.replace(/&quot;/g, '"');
+            s = s.replace(/&#34;/g, '"');
+            s = s.replace(/&amp;#34;/g, '"');
+
+            s = s.replace(/&amp;apos;/g, "'");
+            s = s.replace(/&apos;/g, "'");
+            s = s.replace(/&#39;/g, "'");
+            s = s.replace(/&amp;#39;/g, "'");
+
+            // You can add more replacements here if Etsy uses other entities
+
+            return s;
+          }
+
           function formatMoney(money) {
-            if (!money || typeof money !== "object") return { price: null, currency_code: null };
+            if (!money || typeof money !== "object") {
+              return { price: null, currency_code: null };
+            }
             const amount = Number(money.amount);
             const divisor = Number(money.divisor || 100);
             const currency_code = money.currency_code || null;
-            if (Number.isNaN(amount) || Number.isNaN(divisor) || divisor === 0)
+            if (Number.isNaN(amount) || Number.isNaN(divisor) || divisor === 0) {
               return { price: null, currency_code };
+            }
             return {
               price: (amount / divisor).toFixed(2),
               currency_code,
@@ -105,10 +129,13 @@ jobs:
                   ? item.images[0].url_fullxfull
                   : null;
 
+              const title = decodeEntities(item.title || "");
+              const description = decodeEntities(item.description || "");
+
               return {
                 listing_id: item.listing_id,
-                title: item.title,
-                description: item.description,
+                title,
+                description,
                 url: item.url,
                 price,
                 currency_code,
