@@ -53,14 +53,30 @@
 }
 
 .listing-link {
-  margin-top: 0.55rem;
-  font-size: 0.85rem;
-  text-decoration: none;
-  letter-spacing: .08em;
+  margin-top: 0.65rem;
+  align-self: flex-start;
+
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-pill);
+
+  font-size: 0.75rem;
+  letter-spacing: .1em;
   text-transform: uppercase;
   font-weight: 600;
+
+  text-decoration: none;
   color: #3b1a11;
+  background: rgba(243, 194, 138, 0.35);
+  border: 1px solid rgba(74, 26, 36, 0.25);
+
+  transition: background-color 0.18s ease, transform 0.18s ease;
 }
+
+.listing-link:hover {
+  background: rgba(243, 194, 138, 0.6);
+  transform: translateY(-1px);
+}
+
 
 .listing-link:hover {
   text-decoration: underline;
