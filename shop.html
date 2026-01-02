@@ -1,42 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 <head>
   <meta charset="UTF-8" />
-  <title>Aether Instruments – Current Etsy Listings</title>
+  <title>Aether Instruments – Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bodoni+Moda:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #222;
-      background: #f5f5f5;
+      --bg-page: #f7f7f8;
+      --bg-surface: #ffffff;
+
+      --header-top: #4a1a24;
+      --header-bottom: #24080f;
+
+      --accent: #f3c28a;
+      --accent-soft: #f8d8a7;
+
+      --text-main: #1d1d22;
+      --text-muted: #55556d;
+      --border-subtle: #e5e5e9;
+      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --radius-lg: 16px;
+      --radius-pill: 999px;
+      --max-width: 1200px;
     }
+
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 2rem 1.5rem 3rem;
-      max-width: 1000px;
-      margin-inline: auto;
-      background: #f5f5f5;
+      font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
     }
 
-    header {
-      margin-bottom: 1.5rem;
+    /* HEADER */
+
+    header.site-header {
+      background: linear-gradient(to bottom, var(--header-top), var(--header-bottom));
+      color: white;
+      padding: 1.1rem 1.75rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    h1 {
-      margin: 0 0 0.25rem 0;
-      font-size: 1.8rem;
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2.5rem;
     }
 
-    .subtitle {
-      margin: 0;
-      color: #555;
-      font-size: 0.95rem;
+    .logo-wrap img {
+      height: 112px;
+      display: block;
     }
+
+    nav.main-nav ul {
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      gap:2.3rem;
+      text-transform:uppercase;
+      font-size:.86rem;
+      letter-spacing:.08em;
+      font-weight:500;
+    }
+
+    nav.main-nav a {
+      color:white;
+      text-decoration:none;
+      position:relative;
+      padding-bottom:.25rem;
+    }
+
+    nav.main-nav a::after {
+      content:"";
+      position:absolute;
+      left:0;
+      bottom:0;
+      height:2px;
+      width:0;
+      background:#f3c28a;
+      transition:width .25s ease;
+    }
+
+    nav.main-nav a:hover::after,
+    nav.main-nav a.active::after { width:100%; }
+
+    .nav-toggle {
+      display:none;
+    }
+
+    main {
+      max-width:var(--max-width);
+      margin:2.5rem auto 3.5rem;
+      padding:0 1.5rem;
+    }
+
+    /* BUTTONS */
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:.75rem 1.8rem;
+      border-radius:var(--radius-pill);
+      border:0;
+      cursor:pointer;
+      font-weight:500;
+      font-size:.95rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      transition:transform .12s ease, box-shadow .12s ease, background-color .2s ease;
+      text-decoration:none;         /* removes underline */
+      color:inherit;                /* prevents link blue color */
+    }
+
+    .btn-primary {
+      background:var(--accent);
+      color:#3b1a11;
+      box-shadow:0 8px 18px rgba(0,0,0,.15);
+    }
+
+    .btn-primary:hover {
+      background:var(--accent-soft);
+      transform:translateY(-1px);
+    }
+
+    .btn-ghost {
+      background:transparent;
+      color:#3b1a11;
+      border:1px solid rgba(74,26,36,.4);
+    }
+
+    .btn-ghost:hover {
+      background:rgba(74,26,36,.08);
+      border-color:rgba(74,26,36,.6);
+    }
+
+    .content-card {
+      background:linear-gradient(135deg, rgba(74,26,36,.04), rgba(74,26,36,.09)), var(--bg-surface);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-soft);
+      padding:2rem 2.2rem;
+      border:1px solid rgba(74,26,36,.24);
+    }
+
+    /* SHOP GRID (styled to match site) */
 
     #error {
-      color: darkred;
-      margin-bottom: 0.75rem;
+      color: #7a0c0c;
+      margin: 0 0 0.75rem 0;
       font-size: 0.95rem;
     }
 
@@ -49,20 +173,21 @@
 
     .listing-card {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      padding: 0.75rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 0.85rem;
       display: flex;
       flex-direction: column;
       height: 100%;
+      border: 1px solid rgba(74,26,36,.12);
     }
 
     .listing-image-wrapper {
       width: 100%;
       aspect-ratio: 4 / 3;
       overflow: hidden;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
       background: #eee;
       display: flex;
       align-items: center;
@@ -85,16 +210,23 @@
     }
 
     .listing-price {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.95rem;
       margin-top: auto;
+      color: #2a1a1a;
     }
 
     .listing-link {
-      margin-top: 0.4rem;
-      font-size: 0.9rem;
+      margin-top: 0.55rem;
+      font-size: 0.85rem;
       text-decoration: none;
-      color: #0b6efd;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #3b1a11;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
     }
 
     .listing-link:hover {
@@ -103,31 +235,91 @@
 
     .loading {
       font-size: 0.95rem;
-      color: #555;
+      color: var(--text-muted);
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding-inline: 1rem;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
+    footer.site-footer {
+      margin-top:3rem;
+      padding:1.1rem 1.75rem 1.4rem;
+      background:linear-gradient(to top,var(--header-bottom),var(--header-top));
+      color:#f9eef2;
+      font-size:.85rem;
+    }
+
+    .footer-inner {
+      max-width:var(--max-width);
+      margin:0 auto;
+      display:flex;
+      justify-content:space-between;
+      gap:.75rem;
+      flex-wrap:wrap;
+    }
+
+    @media(max-width:900px){
+      /* If you later add a hero/2-col section to shop, keep this breakpoint */
+    }
+
+    @media(max-width:768px){
+      nav.main-nav{display:none;}
+      .logo-wrap img { height: 92px; }
     }
   </style>
-</head>
-<body>
-  <header>
-    <h1>Aether Instruments – Current Etsy Listings</h1>
-    <p class="subtitle">
-      This page shows your active Etsy listings, refreshed automatically by GitHub Actions.
-    </p>
-  </header>
-
-  <div id="error"></div>
-  <div id="listings-container" class="loading">Loading listings…</div>
 
   <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggle = document.querySelector(".nav-toggle");
+      const nav = document.querySelector("nav.main-nav");
+      if (!toggle || !nav) return;
+      toggle.addEventListener("click", () => {
+        nav.style.display = nav.style.display === "block" ? "none" : "block";
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+
+      <div class="logo-wrap">
+        <img src="https://i0.wp.com/aetherinstruments.com/wp-content/uploads/2024/12/AetherIn.png?w=800&ssl=1"
+             alt="Aether Instruments Logo">
+      </div>
+
+      <nav class="main-nav">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+
+    </div>
+  </header>
+
+  <main>
+    <section class="content-card">
+      <h2>Current Etsy Listings</h2>
+      <p style="margin-top:.35rem; color: var(--text-muted);">
+        This page shows active Etsy listings, refreshed automatically by GitHub Actions.
+      </p>
+
+      <div id="error"></div>
+      <div id="listings-container" class="loading">Loading listings…</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>&copy; <span id="year"></span> Aether Instruments. All rights reserved.</span>
+      <span>Handcrafted in Arizona · <a href="#">Privacy Policy</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
     // Decode HTML entities, especially &quot; and friends
     function decodeHtml(html) {
       if (!html) return "";
@@ -163,6 +355,7 @@
           return;
         }
 
+        container.classList.remove("loading");
         container.innerHTML = "";
 
         listings.forEach((item) => {
