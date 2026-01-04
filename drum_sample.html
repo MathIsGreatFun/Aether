@@ -497,83 +497,114 @@
   let tongues = null;
 
   function buildDrum(){
-    const W = 520, cx = W/2, cy = W/2;
+  const W = 520, cx = W / 2, cy = W / 2;
+  const svgNS = "http://www.w3.org/2000/svg";
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-    svg.setAttribute("viewBox","0 0 520 520");
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 520 520");
 
-    const skin = document.createElementNS(svg.namespaceURI,"circle");
-    skin.setAttribute("cx",cx);
-    skin.setAttribute("cy",cy);
-    skin.setAttribute("r",235);
-    skin.setAttribute("fill","rgba(74,26,36,.06)");
-    skin.setAttribute("stroke","rgba(74,26,36,.18)");
-    skin.setAttribute("stroke-width","2");
-    svg.appendChild(skin);
+  // Subtle maroon→gold gradient for the shell, so it's clearly visible
+  const defs = document.createElementNS(svgNS, "defs");
+  const grad = document.createElementNS(svgNS, "radialGradient");
+  grad.setAttribute("id", "drumSkinGrad");
+  grad.setAttribute("cx", "30%");
+  grad.setAttribute("cy", "20%");
+  grad.setAttribute("r", "80%");
 
-    const ring = document.createElementNS(svg.namespaceURI,"circle");
-    ring.setAttribute("cx",cx);
-    ring.setAttribute("cy",cy);
-    ring.setAttribute("r",205);
-    ring.setAttribute("fill","none");
-    ring.setAttribute("stroke","rgba(74,26,36,.10)");
-    ring.setAttribute("stroke-width","2");
-    svg.appendChild(ring);
+  const stop1 = document.createElementNS(svgNS, "stop");
+  stop1.setAttribute("offset", "0%");
+  stop1.setAttribute("stop-color", "rgba(248,216,167,0.95)");
 
-    const out = [];
-    const rMid = 185;
+  const stop2 = document.createElementNS(svgNS, "stop");
+  stop2.setAttribute("offset", "45%");
+  stop2.setAttribute("stop-color", "rgba(243,194,138,0.95)");
 
-    // Pad 1 center
-    out.push({ pad:1, x:cx, y:cy });
+  const stop3 = document.createElementNS(svgNS, "stop");
+  stop3.setAttribute("offset", "100%");
+  stop3.setAttribute("stop-color", "rgba(74,26,36,0.95)");
 
-    // Pads 2..10 around perimeter
-    PERIM_ANGLES_UP_CCW.forEach((deg, i) => {
-      const theta = deg * Math.PI / 180;
-      const x = cx + rMid * Math.sin(theta);
-      const y = cy - rMid * Math.cos(theta);
-      out.push({ pad:i+2, x, y });
-    });
+  grad.appendChild(stop1);
+  grad.appendChild(stop2);
+  grad.appendChild(stop3);
+  defs.appendChild(grad);
+  svg.appendChild(defs);
 
-    out.forEach(t => {
-      const g = document.createElementNS(svg.namespaceURI,"g");
-      g.classList.add("tongue");
-      g.dataset.pad = String(t.pad);
+  // Outer shell
+  const skin = document.createElementNS(svgNS, "circle");
+  skin.setAttribute("cx", cx);
+  skin.setAttribute("cy", cy);
+  skin.setAttribute("r", 235);
+  skin.setAttribute("fill", "url(#drumSkinGrad)");
+  skin.setAttribute("stroke", "rgba(0,0,0,0.35)");
+  skin.setAttribute("stroke-width", "2");
+  svg.appendChild(skin);
 
-      const circ = document.createElementNS(svg.namespaceURI,"circle");
-      circ.setAttribute("cx", t.x);
-      circ.setAttribute("cy", t.y);
-      circ.setAttribute("r", t.pad === 1 ? 50 : 38);
-      circ.setAttribute("fill","rgba(255,255,255,.92)");
-      circ.setAttribute("stroke","rgba(74,26,36,.22)");
-      circ.setAttribute("stroke-width","1.4");
-      g.appendChild(circ);
+  // Slight inner ring
+  const ring = document.createElementNS(svgNS, "circle");
+  ring.setAttribute("cx", cx);
+  ring.setAttribute("cy", cy);
+  ring.setAttribute("r", 205);
+  ring.setAttribute("fill", "none");
+  ring.setAttribute("stroke", "rgba(255,255,255,0.45)");
+  ring.setAttribute("stroke-width", "1.8");
+  svg.appendChild(ring);
 
-      const lab = document.createElementNS(svg.namespaceURI,"text");
-      lab.setAttribute("x", t.x);
-      lab.setAttribute("y", t.y + 5);
-      lab.setAttribute("text-anchor","middle");
-      lab.setAttribute("font-family","Roboto, system-ui, sans-serif");
-      lab.setAttribute("font-weight","700");
-      lab.setAttribute("font-size","14");
-      lab.setAttribute("fill","#55556d");
-      g.appendChild(lab);
+  const out = [];
+  const rMid = 185;
 
-      g.onclick = async () => {
-        ensureAudio();
-        const n = padNotes[t.pad - 1];
-        if (!n) return;
-        await triggerPlay(n, t.pad);
-      };
+  // Pad 1 center
+  out.push({ pad: 1, x: cx, y: cy });
 
-      t.el = g;
-      t.lab = lab;
-      svg.appendChild(g);
-    });
+  // Pads 2..10 around perimeter
+  PERIM_ANGLES_UP_CCW.forEach((deg, i) => {
+    const theta = (deg * Math.PI) / 180;
+    const x = cx + rMid * Math.sin(theta);
+    const y = cy - rMid * Math.cos(theta);
+    out.push({ pad: i + 2, x, y });
+  });
 
-    drumHost.innerHTML = "";
-    drumHost.appendChild(svg);
-    return out;
-  }
+  out.forEach((t) => {
+    const g = document.createElementNS(svgNS, "g");
+    g.classList.add("tongue");
+    g.dataset.pad = String(t.pad);
+
+    const circ = document.createElementNS(svgNS, "circle");
+    circ.setAttribute("cx", t.x);
+    circ.setAttribute("cy", t.y);
+    circ.setAttribute("r", t.pad === 1 ? 56 : 44);
+    // Tongues: light gold on maroon shell with clear border
+    circ.setAttribute("fill", "#fdf3dd");
+    circ.setAttribute("stroke", "rgba(74,26,36,0.7)");
+    circ.setAttribute("stroke-width", "2");
+    g.appendChild(circ);
+
+    const lab = document.createElementNS(svgNS, "text");
+    lab.setAttribute("x", t.x);
+    lab.setAttribute("y", t.y + 5);
+    lab.setAttribute("text-anchor", "middle");
+    lab.setAttribute("font-family", "Roboto, system-ui, sans-serif");
+    lab.setAttribute("font-weight", "700");
+    lab.setAttribute("font-size", "15");
+    lab.setAttribute("fill", "#4a1a24");
+    g.appendChild(lab);
+
+    g.onclick = async () => {
+      ensureAudio();
+      const n = padNotes[t.pad - 1];
+      if (!n) return;
+      await triggerPlay(n, t.pad);
+    };
+
+    t.el = g;
+    t.lab = lab;
+    svg.appendChild(g);
+  });
+
+  drumHost.innerHTML = "";
+  drumHost.appendChild(svg);
+  return out;
+}
+
 
   function syncDrum(){
     if (!tongues) tongues = buildDrum();
