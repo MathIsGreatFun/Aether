@@ -54,7 +54,7 @@
       flex-wrap:wrap;
       gap:10px;
       align-items:center;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
     .pill{
@@ -65,34 +65,8 @@
       background:#fff;
       white-space:nowrap;
     }
-    /* Glows when at 10/10 */
-    .pill.full{
-      background:linear-gradient(90deg, rgba(248,216,167,.9), #fff7ea);
-      border-color:rgba(243,194,138,.85);
-      box-shadow:0 0 0 1px rgba(243,194,138,.5);
-    }
 
     .sep{height:1px;background:rgba(0,0,0,.08);margin:12px 0}
-
-    /* Sustain row */
-    .sustain-row{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-bottom:12px;
-      flex-wrap:wrap;
-    }
-    .sustain-row .pill{
-      padding-inline:9px;
-    }
-    .sustain-row input[type="range"]{
-      flex:1 1 160px;
-    }
-    .sustain-label{
-      font-size:12px;
-      opacity:.8;
-      white-space:nowrap;
-    }
 
     .keys{
       display:grid;
@@ -200,10 +174,7 @@
   <section class="content-card">
     <div class="drum-header">
       <h2 class="drum-title">Virtual Tongue Drum</h2>
-      <p>
-        Please select up to 10 notes. Press numbers 1 through 0 on the keyboard,
-        or tap on the tongues to play the corresponding notes.
-      </p>
+      <p>Please select 10 notes. Press numbers 1 through 0 on the keyboard, or click on the tongues to play the corresponding notes.</p>
     </div>
 
     <div class="drum-grid">
@@ -215,20 +186,6 @@
           <button class="btn btn-ghost" id="transposeDown" type="button">Transpose -1</button>
           <button class="btn btn-ghost" id="transposeUp" type="button">Transpose +1</button>
           <button class="btn btn-ghost" id="copyLink" type="button">Copy share link</button>
-        </div>
-
-        <!-- Sustain control -->
-        <div class="sustain-row">
-          <span class="pill">Sustain</span>
-          <input
-            type="range"
-            id="sustain"
-            min="300"
-            max="3000"
-            step="100"
-            value="1500"
-          />
-          <span class="sustain-label" id="sustainLabel">1.5 s</span>
         </div>
 
         <div class="sep"></div>
@@ -293,8 +250,8 @@
   const MAX_VOICES = 8;
   const activeVoices = []; // BufferSource nodes
 
-  // sustain in milliseconds (controlled by slider)
-  let sustainMs = 1500;
+  // Simple fixed sustain (in ms)
+  const SUSTAIN_MS = 1500;
 
   function ensureAudio(){
     if (!audio) {
@@ -320,15 +277,15 @@
     return "samples/" + encodeURIComponent(note) + ".mp3";
   }
 
-  // Safari-friendly decodeAudioData (promise OR callback style)
+  // Safari-friendly decodeAudioData
   function decodeBuffer(arr){
     return new Promise((resolve, reject) => {
       try {
         if (audio.decodeAudioData.length === 1) {
-          // Promise style
+          // Promise-style
           audio.decodeAudioData(arr).then(resolve, reject);
         } else {
-          // Old callback style (iOS Safari)
+          // Callback-style (older iOS Safari)
           audio.decodeAudioData(arr, resolve, reject);
         }
       } catch (e) {
@@ -360,7 +317,7 @@
     src.buffer = buf;
 
     const g = audio.createGain();
-    const sustainSec = Math.min(sustainMs / 1000, buf.duration);
+    const sustainSec = Math.min(SUSTAIN_MS / 1000, buf.duration);
 
     g.gain.setValueAtTime(0.0001, now);
     g.gain.linearRampToValueAtTime(1.0, now + 0.008);
@@ -478,24 +435,6 @@
   const picker = document.getElementById("picker");
   const drumHost = document.getElementById("drumHost");
   const countPill = document.getElementById("countPill");
-  const sustainSlider = document.getElementById("sustain");
-  const sustainLabel  = document.getElementById("sustainLabel");
-
-  function updateSustainLabel(){
-    const s = sustainMs / 1000;
-    sustainLabel.textContent = s.toFixed(1) + " s";
-  }
-
-  if (sustainSlider) {
-    sustainSlider.addEventListener("input", () => {
-      const v = Number(sustainSlider.value);
-      if (!Number.isNaN(v)) {
-        sustainMs = v;
-        updateSustainLabel();
-      }
-    });
-    updateSustainLabel();
-  }
 
   function buildPicker(){
     picker.innerHTML = "";
@@ -536,7 +475,7 @@
     }
   }
 
-  // MOBILE-SAFE: no CSS.escape, just scan elements
+  // MOBILE-SAFE: avoid CSS.escape
   function flashKey(note){
     const keys = picker.querySelectorAll(".key");
     let el = null;
@@ -664,7 +603,6 @@
 
   // -----------------------------
   // Keyboard mapping: 1..9 => pads 1..9, 0 => pad 10
-  // (won't fire on mobile, but harmless)
   // -----------------------------
   window.addEventListener("keydown", async (e) => {
     const tag = (e.target && e.target.tagName || "").toLowerCase();
@@ -712,81 +650,6 @@
   function render(){
     recomputePads();
     countPill.textContent = `Selected: ${selectedSet.size} / 10`;
-    countPill.classList.toggle("full", selectedSet.size === MAX_NOTES);
-    buildPicker();
-    syncDrum();
-  }
-
-  initFromURL();
-  render();
-})();
-</script>
-
-  function flashPad(pad){
-    if (!tongues) return;
-    const t = tongues.find(x => x.pad === pad);
-    if (!t || !t.el) return;
-    t.el.classList.add("flash");
-    clearTimeout(t.el._flashTm);
-    t.el._flashTm = setTimeout(() => t.el.classList.remove("flash"), 120);
-  }
-
-  async function triggerPlay(note, pad){
-    flashPad(pad);
-    flashKey(note);
-    try { await playAudio(note); } catch (e) { console.warn(e); }
-  }
-
-  // -----------------------------
-  // Keyboard mapping: 1..9 => pads 1..9, 0 => pad 10
-  // -----------------------------
-  window.addEventListener("keydown", async (e) => {
-    const tag = (e.target && e.target.tagName || "").toLowerCase();
-    if (tag === "input" || tag === "textarea") return;
-
-    const k = e.key;
-    let pad = null;
-    if (k >= "1" && k <= "9") pad = Number(k);
-    else if (k === "0") pad = 10;
-    else return;
-
-    const n = padNotes[pad - 1];
-    if (!n) return;
-
-    ensureAudio();
-    await triggerPlay(n, pad);
-  });
-
-  // -----------------------------
-  // Controls
-  // -----------------------------
-  document.getElementById("clear").onclick = () => {
-    selectedSet.clear();
-    render();
-  };
-
-  document.getElementById("playSeq").onclick = async () => {
-    ensureAudio();
-    recomputePads(); // ensure current pad order
-    for (let i = 0; i < padNotes.length; i++){
-      const note = padNotes[i];
-      const pad = i + 1;
-      await triggerPlay(note, pad);
-      await new Promise(r => setTimeout(r, 220));
-    }
-  };
-
-  document.getElementById("transposeDown").onclick = () => transposeSelection(-1);
-  document.getElementById("transposeUp").onclick   = () => transposeSelection(1);
-  document.getElementById("copyLink").onclick      = async () => { await copyShareLink(); };
-
-  // -----------------------------
-  // Render
-  // -----------------------------
-  function render(){
-    recomputePads();
-    countPill.textContent = `Selected: ${selectedSet.size} / 10`;
-    countPill.classList.toggle("full", selectedSet.size === MAX_NOTES);
     buildPicker();
     syncDrum();
   }
