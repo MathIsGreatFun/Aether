@@ -320,6 +320,23 @@
     return "samples/" + encodeURIComponent(note) + ".mp3";
   }
 
+  // Safari-friendly decodeAudioData (promise OR callback style)
+  function decodeBuffer(arr){
+    return new Promise((resolve, reject) => {
+      try {
+        if (audio.decodeAudioData.length === 1) {
+          // Promise style
+          audio.decodeAudioData(arr).then(resolve, reject);
+        } else {
+          // Old callback style (iOS Safari)
+          audio.decodeAudioData(arr, resolve, reject);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
   async function loadSample(note){
     if (sampleCache.has(note)) return sampleCache.get(note);
     ensureAudio();
@@ -327,7 +344,7 @@
     const res = await fetch(url);
     if (!res.ok) throw new Error("Missing sample: " + url);
     const arr = await res.arrayBuffer();
-    const buf = await audio.decodeAudioData(arr);
+    const buf = await decodeBuffer(arr);
     sampleCache.set(note, buf);
     return buf;
   }
@@ -519,8 +536,16 @@
     }
   }
 
+  // MOBILE-SAFE: no CSS.escape, just scan elements
   function flashKey(note){
-    const el = picker.querySelector(`.key[data-note="${CSS.escape(note)}"]`);
+    const keys = picker.querySelectorAll(".key");
+    let el = null;
+    for (const k of keys){
+      if (k.dataset.note === note){
+        el = k;
+        break;
+      }
+    }
     if (!el) return;
     el.classList.add("flash");
     clearTimeout(el._flashTm);
@@ -528,7 +553,7 @@
   }
 
   // -----------------------------
-  // Drum SVG (RESTORES big outer skin)
+  // Drum SVG (outer skin)
   // -----------------------------
   let tongues = null;
 
@@ -538,7 +563,6 @@
     const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
     svg.setAttribute("viewBox","0 0 520 520");
 
-    // BIG OUTER SKIN (restored)
     const skin = document.createElementNS(svg.namespaceURI,"circle");
     skin.setAttribute("cx",cx);
     skin.setAttribute("cy",cy);
@@ -548,7 +572,6 @@
     skin.setAttribute("stroke-width","2");
     svg.appendChild(skin);
 
-    // optional inner ring for depth
     const ring = document.createElementNS(svg.namespaceURI,"circle");
     ring.setAttribute("cx",cx);
     ring.setAttribute("cy",cy);
@@ -623,6 +646,81 @@
       t.lab.setAttribute("font-weight", n ? "800" : "700");
     });
   }
+
+  function flashPad(pad){
+    if (!tongues) return;
+    const t = tongues.find(x => x.pad === pad);
+    if (!t || !t.el) return;
+    t.el.classList.add("flash");
+    clearTimeout(t.el._flashTm);
+    t.el._flashTm = setTimeout(() => t.el.classList.remove("flash"), 120);
+  }
+
+  async function triggerPlay(note, pad){
+    flashPad(pad);
+    flashKey(note);
+    try { await playAudio(note); } catch (e) { console.warn(e); }
+  }
+
+  // -----------------------------
+  // Keyboard mapping: 1..9 => pads 1..9, 0 => pad 10
+  // (won't fire on mobile, but harmless)
+  // -----------------------------
+  window.addEventListener("keydown", async (e) => {
+    const tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+
+    const k = e.key;
+    let pad = null;
+    if (k >= "1" && k <= "9") pad = Number(k);
+    else if (k === "0") pad = 10;
+    else return;
+
+    const n = padNotes[pad - 1];
+    if (!n) return;
+
+    ensureAudio();
+    await triggerPlay(n, pad);
+  });
+
+  // -----------------------------
+  // Controls
+  // -----------------------------
+  document.getElementById("clear").onclick = () => {
+    selectedSet.clear();
+    render();
+  };
+
+  document.getElementById("playSeq").onclick = async () => {
+    ensureAudio();
+    recomputePads(); // ensure current pad order
+    for (let i = 0; i < padNotes.length; i++){
+      const note = padNotes[i];
+      const pad = i + 1;
+      await triggerPlay(note, pad);
+      await new Promise(r => setTimeout(r, 220));
+    }
+  };
+
+  document.getElementById("transposeDown").onclick = () => transposeSelection(-1);
+  document.getElementById("transposeUp").onclick   = () => transposeSelection(1);
+  document.getElementById("copyLink").onclick      = async () => { await copyShareLink(); };
+
+  // -----------------------------
+  // Render
+  // -----------------------------
+  function render(){
+    recomputePads();
+    countPill.textContent = `Selected: ${selectedSet.size} / 10`;
+    countPill.classList.toggle("full", selectedSet.size === MAX_NOTES);
+    buildPicker();
+    syncDrum();
+  }
+
+  initFromURL();
+  render();
+})();
+</script>
 
   function flashPad(pad){
     if (!tongues) return;
