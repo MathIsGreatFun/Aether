@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="shop.css">
 
-  <!-- Mobile nav toggle (CLASS-BASED, SAFE) -->
+  <!-- Mobile nav toggle (CLASS-BASED, matches styles.css) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggle = document.querySelector(".nav-toggle");
@@ -72,18 +72,15 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // Decode HTML entities, especially &quot; and friends
     function decodeHtml(html) {
       if (!html) return "";
       let s = String(html);
 
-      // Smash the common quote encodings, including double-escaped forms
-      s = s.replace(/&(amp;)*quot;/g, '"');   // &quot; or &amp;quot; or &amp;amp;quot; ...
-      s = s.replace(/&(amp;)*#34;/g, '"');    // &#34; or &amp;#34; ...
-      s = s.replace(/&(amp;)*apos;/g, "'");   // &apos; or &amp;apos;
-      s = s.replace(/&(amp;)*#39;/g, "'");    // &#39; or &amp;#39;
+      s = s.replace(/&(amp;)*quot;/g, '"');
+      s = s.replace(/&(amp;)*#34;/g, '"');
+      s = s.replace(/&(amp;)*apos;/g, "'");
+      s = s.replace(/&(amp;)*#39;/g, "'");
 
-      // Generic decode pass in case there are other entities
       const txt = document.createElement("textarea");
       txt.innerHTML = s;
       return txt.value;
@@ -114,7 +111,6 @@
           const card = document.createElement("div");
           card.className = "listing-card";
 
-          // Image
           const imageWrapper = document.createElement("div");
           imageWrapper.className = "listing-image-wrapper";
 
@@ -129,13 +125,11 @@
 
           card.appendChild(imageWrapper);
 
-          // Title
           const title = document.createElement("div");
           title.className = "listing-title";
           title.textContent = decodeHtml(item.title || "Untitled listing");
           card.appendChild(title);
 
-          // Price
           const price = document.createElement("div");
           price.className = "listing-price";
 
@@ -148,7 +142,6 @@
 
           card.appendChild(price);
 
-          // Link
           if (item.url) {
             const link = document.createElement("a");
             link.className = "listing-link";
