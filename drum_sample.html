@@ -1,329 +1,995 @@
-<!DOCTYPE html>
-<html lang="en-US">
-<head>
-  <meta charset="UTF-8" />
-  <title>Aether Instruments – Virtual Tongue Drum</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Fonts (same as site) -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bodoni+Moda:wght@500;700&display=swap" rel="stylesheet">
-
-  <!-- Site styles -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- Mobile nav toggle -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggle = document.querySelector(".nav-toggle");
-      const nav = document.querySelector("nav.main-nav");
-      if (!toggle || !nav) return;
-      toggle.addEventListener("click", () => nav.classList.toggle("is-open"));
-    });
-  </script>
-
-  <!-- Drum page styles -->
-  <style>
-    .drum-page .content-card{ margin-top:18px }
-
-    .drum-header{ margin-bottom:14px }
-    .drum-title{
-      font-family:"Bodoni Moda",serif;
-      font-weight:700;
-      margin:0 0 6px;
-    }
-
-    .drum-grid{
-      display:grid;
-      grid-template-columns:1.3fr .9fr;
-      gap:16px;
-    }
-    @media (max-width:980px){
-      .drum-grid{grid-template-columns:1fr}
-    }
-
-    .panel{
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:16px;
-      background:rgba(255,255,255,.75);
-      backdrop-filter:blur(6px);
-      padding:14px;
-    }
-
-    .controls{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      margin-bottom:12px;
-    }
-
-    .pill{
-      border:1px solid rgba(0,0,0,.1);
-      border-radius:999px;
-      padding:7px 11px;
-      font-size:12px;
-      background:#fff;
-    }
-
-    .sep{height:1px;background:rgba(0,0,0,.08);margin:12px 0}
-
-    .keys{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:8px;
-    }
-    .oct{margin:12px 0 8px;font-size:12px;opacity:.75}
-
-    .key{
-      border:1px solid rgba(0,0,0,.1);
-      border-radius:12px;
-      padding:10px;
-      background:#fff;
-      cursor:pointer;
-      text-align:center;
-      font-weight:500;
-      transition:transform .06s, box-shadow .12s, border-color .12s;
-    }
-    .key:hover{
-      transform:translateY(-1px);
-      box-shadow:0 8px 18px rgba(0,0,0,.08);
-    }
-    .key.sel{
-      border-color:rgba(74,26,36,.35);
-      box-shadow:
-        0 0 0 2px rgba(243,194,138,.35) inset,
-        0 10px 22px rgba(243,194,138,.18);
-      background:linear-gradient(180deg, rgba(248,216,167,.6), #fff);
-    }
-    .key.flash{
-      box-shadow:
-        0 0 0 2px rgba(243,194,138,.5) inset,
-        0 12px 28px rgba(243,194,138,.35);
-    }
-
-    .drumWrap{display:flex;justify-content:center;min-height:520px}
-    svg{max-width:100%}
-
-    .tongue{cursor:pointer}
-    .tongue.off{opacity:.25}
-    .tongue.flash circle{
-      fill:rgba(248,216,167,.85);
-      stroke:rgba(243,194,138,.95);
-      filter:drop-shadow(0 0 14px rgba(243,194,138,.55));
-    }
-
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:22px;
-      transform:translateX(-50%);
-      background:#fff;
-      border:1px solid rgba(0,0,0,.1);
-      border-radius:12px;
-      padding:10px 12px;
-      box-shadow:0 10px 26px rgba(0,0,0,.14);
-      font-size:13px;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .18s ease;
-    }
-    .toast.show{opacity:1}
-  </style>
-</head>
-
-<body class="drum-page">
-<header class="site-header">
-  <div class="header-inner">
-    <div class="logo-wrap">
-      <img src="https://i0.wp.com/aetherinstruments.com/wp-content/uploads/2024/12/AetherIn.png?w=800&ssl=1" alt="Aether Instruments Logo">
+<main class="page-main drum-page">
+  <section class="page-hero drum-hero">
+    <div class="hero-text">
+      <h1 class="hero-title">Virtual Tongue Drum</h1>
+      <p class="hero-subtitle">
+        Explore meditative scales and custom note layouts using the same tuning philosophy
+        as Aether Instruments. Click pads, use keys <strong>1–9, 0</strong>, transpose, and
+        share your favorite voicings.
+      </p>
     </div>
-    <button class="nav-toggle">☰ Menu</button>
-    <nav class="main-nav">
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="shop.html">Shop</a></li>
-        <li><a href="#" class="active">Virtual Drum</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
+  </section>
 
-<main>
-<section class="content-card">
-  <div class="drum-header">
-    <h2 class="drum-title">Virtual Tongue Drum</h2>
-    <p>Please select 10 notes. Press numbers 1–0 or click pads to play.</p>
-  </div>
+  <section class="drum-layout">
+    <!-- Left: Controls / note picker -->
+    <div class="drum-controls-card">
+      <h2 class="section-title">Scale &amp; Layout</h2>
 
-  <div class="drum-grid">
-    <div class="panel">
-      <div class="controls">
-        <span class="pill" id="countPill">Selected: 0 / 10</span>
-        <button class="btn btn-ghost" id="clear">Clear</button>
-        <button class="btn btn-primary" id="playSeq">Play 1→10</button>
-        <button class="btn btn-ghost" id="transposeDown">Transpose -1</button>
-        <button class="btn btn-ghost" id="transposeUp">Transpose +1</button>
-        <button class="btn btn-ghost" id="copyLink">Copy share link</button>
+      <div class="note-picker">
+        <div class="picker-header">
+          <span class="label">Available notes</span>
+          <span class="picker-hint">Tap to toggle (max 10)</span>
+        </div>
+        <div class="note-grid" id="note-picker-grid">
+          <!-- Filled by JS -->
+        </div>
       </div>
-      <div class="sep"></div>
-      <div id="picker"></div>
+
+      <div class="selected-notes">
+        <h3 class="subheading">Active layout</h3>
+        <div class="selected-note-list" id="selected-note-list">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <div class="transpose-row">
+        <span class="label">Transpose</span>
+        <div class="transpose-controls">
+          <button type="button" class="pill-button" id="transpose-down">− semitone</button>
+          <div class="transpose-display">
+            <span id="transpose-amount">0</span>
+            <span class="transpose-unit">semitones</span>
+          </div>
+          <button type="button" class="pill-button" id="transpose-up">+ semitone</button>
+        </div>
+        <div class="transpose-hint" id="transpose-hint"></div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="primary-button" id="play-sequence">
+          Play sequence 1 → 10
+        </button>
+        <button type="button" class="ghost-button" id="copy-link">
+          Copy share link
+        </button>
+      </div>
+
+      <div class="share-feedback" id="share-feedback" aria-live="polite"></div>
+
+      <div class="help-text">
+        <p>
+          Keyboard pads: <strong>1–9, 0</strong> map to pads <strong>1–10</strong>.
+          Lowest note is always at the <strong>center</strong>; higher notes orbit
+          clockwise.
+        </p>
+      </div>
     </div>
 
-    <div class="panel">
-      <div class="drumWrap" id="drumHost"></div>
+    <!-- Right: Drum visual -->
+    <div class="drum-visual-card">
+      <div class="drum-shell">
+        <div class="drum-pad drum-pad-center" data-pad-index="0">
+          <span class="pad-number">1</span>
+          <span class="pad-note" data-pad-note></span>
+        </div>
+        <!-- Peripheral pads injected by JS -->
+      </div>
+      <div class="drum-legend">
+        <p>
+          Pads will <span class="legend-highlight">glow gold</span> when triggered,
+          along with their corresponding note tiles.
+        </p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 </main>
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <span>&copy; <span id="year"></span> Aether Instruments</span>
-  </div>
-</footer>
+<!-- Page-scoped styles for the drum layout -->
+<style>
+  /* Layout & cards */
+  .drum-page {
+    padding: 2.5rem 1.5rem 4rem;
+  }
 
-<div class="toast" id="toast">Copied!</div>
+  @media (min-width: 900px) {
+    .drum-page {
+      padding: 3rem 2rem 4.5rem;
+    }
+  }
+
+  .drum-hero {
+    max-width: var(--max-width);
+    margin: 0 auto 2rem;
+  }
+
+  .drum-layout {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .drum-layout {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .drum-controls-card,
+  .drum-visual-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 1.75rem 1.5rem;
+    border: 1px solid var(--border-subtle);
+  }
+
+  @media (min-width: 900px) {
+    .drum-controls-card,
+    .drum-visual-card {
+      padding: 2rem;
+    }
+  }
+
+  .section-title {
+    font-family: "Bodoni Moda", serif;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+  }
+
+  .subheading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .hero-title {
+    font-family: "Bodoni Moda", serif;
+    font-size: clamp(2rem, 3vw, 2.5rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtitle {
+    max-width: 40rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  /* Note picker */
+  .note-picker {
+    margin-bottom: 1.5rem;
+  }
+
+  .picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .picker-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .note-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .note-tile {
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    padding: 0.4rem 0.1rem;
+    font-size: 0.85rem;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background: #f5f4f7;
+    color: var(--text-main);
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.1s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .note-tile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .note-tile.selected {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .note-tile.flash {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 18px rgba(243, 194, 138, 0.9);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Selected notes list */
+  .selected-notes {
+    margin-bottom: 1.5rem;
+  }
+
+  .selected-note-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.5rem;
+  }
+
+  .selected-note-pill {
+    border-radius: 999px;
+    background: #f0eef7;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .selected-note-pill .pill-index {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* Buttons */
+  .pill-button,
+  .primary-button,
+  .ghost-button {
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
+    padding: 0.45rem 1.1rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .primary-button {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #4a1a24;
+  }
+
+  .primary-button:hover {
+    background: #f7cf9e;
+  }
+
+  .ghost-button {
+    background: transparent;
+    border-color: var(--border-subtle);
+    color: var(--text-main);
+  }
+
+  .ghost-button:hover {
+    background: #f5f4f7;
+  }
+
+  .pill-button {
+    background: #f5f4f7;
+    border-color: var(--border-subtle);
+    color: var(--text-main);
+  }
+
+  .pill-button:hover {
+    background: #ebe8f3;
+  }
+
+  .actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .transpose-row {
+    margin-bottom: 1.25rem;
+  }
+
+  .transpose-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  .transpose-display {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: #f5f4f7;
+    font-size: 0.85rem;
+  }
+
+  .transpose-display #transpose-amount {
+    font-weight: 600;
+  }
+
+  .transpose-unit {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .transpose-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    min-height: 1.1rem;
+  }
+
+  .share-feedback {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    min-height: 1.1rem;
+  }
+
+  .help-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+  }
+
+  .legend-highlight {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Drum visual */
+  .drum-visual-card {
+    text-align: center;
+  }
+
+  .drum-shell {
+    position: relative;
+    margin: 0 auto 1.25rem;
+    width: min(72vw, 340px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 20%, #f8d8a7 0, #f3c28a 20%, #4a1a24 70%);
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .drum-pad {
+    position: absolute;
+    width: 26%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fffaf2;
+    font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    cursor: pointer;
+    transition:
+      transform 0.05s ease-out,
+      box-shadow 0.12s ease-out,
+      background 0.12s ease-out,
+      border-color 0.12s ease-out;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  .drum-pad-center {
+    position: relative;
+    width: 32%;
+  }
+
+  .pad-number {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 0.15rem;
+  }
+
+  .pad-note {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .drum-pad:hover {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .drum-pad.pad-active {
+    animation: padPulse 160ms ease-out;
+    box-shadow:
+      0 0 0 3px rgba(243, 194, 138, 0.9),
+      0 0 20px rgba(243, 194, 138, 0.95),
+      0 12px 26px rgba(0, 0, 0, 0.45);
+    background: radial-gradient(circle at 30% 20%, rgba(248, 216, 167, 0.95), rgba(74, 26, 36, 0.95));
+    border-color: rgba(255, 244, 211, 0.95);
+  }
+
+  @keyframes padPulse {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    40% {
+      transform: translateY(1px) scale(1.06);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .drum-legend {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+</style>
 
 <script>
-document.getElementById("year").textContent=new Date().getFullYear();
+  (function () {
+    // -----------------------------
+    // Config
+    // -----------------------------
+    const MAX_NOTES = 10; // including center
+    const POLYPHONY_LIMIT = 8;
+    const SEQUENCE_INTERVAL_MS = 220;
 
-(() => {
-  const MAX_NOTES=10;
-  const CHROMA=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const SEMI={C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
-  const MIN_NOTE="D3", MAX_NOTE="B5";
-  const PERIM=[200,160,240,120,280,80,320,40,0];
+    // Ordered by pitch (ascending) and used for sorting + valid range
+    const MASTER_NOTES = [
+      "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+      "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+      "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5"
+    ];
 
-  const selectedSet=new Set();
-  let padNotes=[], tongues=null;
+    // Peripheral pad angles (degrees) for pads 2–10
+    const PERIPHERAL_ANGLES = [
+      -90,  -50,  -10,
+       30,   70,  110,
+      150,  190,  230
+    ];
 
-  function noteToMidi(n){const m=n.match(/^([A-G]#?)(\d)$/);return m?((+m[2]+1)*12+SEMI[m[1]]):null}
-  function midiToNote(m){return CHROMA[m%12]+(Math.floor(m/12)-1)}
-  function minMidi(){return noteToMidi(MIN_NOTE)}
-  function maxMidi(){return noteToMidi(MAX_NOTE)}
+    // -----------------------------
+    // Elements
+    // -----------------------------
+    const notePickerGrid = document.getElementById("note-picker-grid");
+    const selectedNoteList = document.getElementById("selected-note-list");
+    const transposeDownBtn = document.getElementById("transpose-down");
+    const transposeUpBtn = document.getElementById("transpose-up");
+    const transposeAmountSpan = document.getElementById("transpose-amount");
+    const transposeHint = document.getElementById("transpose-hint");
+    const playSequenceBtn = document.getElementById("play-sequence");
+    const copyLinkBtn = document.getElementById("copy-link");
+    const shareFeedback = document.getElementById("share-feedback");
 
-  let audio=null, masterGain=null, compressor=null;
-  const cache=new Map(), MAX_VOICES=8, voices=[];
+    const drumShell = document.querySelector(".drum-shell");
+    const centerPad = drumShell.querySelector(".drum-pad-center");
+    const centerNoteSpan = centerPad.querySelector("[data-pad-note]");
 
-  function ensureAudio(){
-    if(!audio){
-      audio=new AudioContext();
-      masterGain=audio.createGain(); masterGain.gain.value=.45;
-      compressor=audio.createDynamicsCompressor();
-      masterGain.connect(compressor); compressor.connect(audio.destination);
+    // -----------------------------
+    // State
+    // -----------------------------
+    let selectedNotes = []; // sorted ascending by MASTER_NOTES index
+    let transposeAmount = 0;
+    let isPlayingSequence = false;
+
+    // map note -> tile element
+    const tileMap = new Map();
+    // pad elements: index -> element
+    const padMap = new Map();
+
+    // Audio
+    let audioContext = null;
+    let compressorNode = null;
+    let masterGain = null;
+    const sampleBuffers = new Map(); // note -> AudioBuffer
+    let isLoadingSample = new Map(); // note -> boolean
+    const activeVoices = []; // { source, startedAt }
+
+    // -----------------------------
+    // Utility functions
+    // -----------------------------
+    const noteIndex = (note) => MASTER_NOTES.indexOf(note);
+
+    function sortNotesAscending(notes) {
+      return [...notes].sort((a, b) => noteIndex(a) - noteIndex(b));
     }
-    if(audio.state==="suspended")audio.resume();
-  }
 
-  function url(n){return "samples/"+encodeURIComponent(n)+".mp3"}
-  async function load(n){
-    if(cache.has(n))return cache.get(n);
-    ensureAudio();
-    const b=await (await fetch(url(n))).arrayBuffer();
-    const buf=await audio.decodeAudioData(b);
-    cache.set(n,buf); return buf;
-  }
+    function clampTransposeAmount(proposed) {
+      if (selectedNotes.length === 0) return proposed;
 
-  async function play(n,pad){
-    ensureAudio();
-    const buf=await load(n), now=audio.currentTime;
-    const s=audio.createBufferSource(), g=audio.createGain();
-    s.buffer=buf;
-    g.gain.setValueAtTime(.001,now);
-    g.gain.linearRampToValueAtTime(1,now+.01);
-    g.gain.linearRampToValueAtTime(.001,now+Math.min(1.8,buf.duration));
-    s.connect(g); g.connect(masterGain);
-    voices.push(s); while(voices.length>MAX_VOICES)voices.shift().stop();
-    s.start(); s.stop(now+buf.duration+.05);
-    flashPad(pad); flashKey(n);
-  }
+      let minIdx = Infinity;
+      let maxIdx = -Infinity;
+      for (const n of selectedNotes) {
+        const idx = noteIndex(n);
+        if (idx === -1) continue;
+        minIdx = Math.min(minIdx, idx);
+        maxIdx = Math.max(maxIdx, idx);
+      }
 
-  function recompute(){padNotes=[...selectedSet].sort((a,b)=>noteToMidi(a)-noteToMidi(b)).slice(0,10)}
+      const minAllowed = 0;
+      const maxAllowed = MASTER_NOTES.length - 1;
 
-  const picker=document.getElementById("picker");
-  function buildPicker(){
-    picker.innerHTML="";
-    for(let o=3;o<=5;o++){
-      picker.insertAdjacentHTML("beforeend",`<div class="oct">Octave ${o}</div>`);
-      const g=document.createElement("div"); g.className="keys";
-      CHROMA.forEach(c=>{
-        const n=c+o,m=noteToMidi(n);
-        if(m<minMidi()||m>maxMidi()){g.appendChild(document.createElement("div"));return}
-        const k=document.createElement("div");
-        k.className="key"+(selectedSet.has(n)?" sel":"");
-        k.textContent=n; k.dataset.note=n;
-        k.onclick=()=>{selectedSet.has(n)?selectedSet.delete(n):selectedSet.size<10&&selectedSet.add(n); render()}
-        g.appendChild(k);
+      const maxDown = minIdx - minAllowed;
+      const maxUp = maxAllowed - maxIdx;
+
+      if (proposed < -maxDown) return -maxDown;
+      if (proposed > maxUp) return maxUp;
+      return proposed;
+    }
+
+    function applyTransposeToSelection(baseNotes, semitones) {
+      return baseNotes.map((n) => {
+        const idx = noteIndex(n);
+        const newIdx = idx + semitones;
+        return MASTER_NOTES[newIdx];
       });
-      picker.appendChild(g);
     }
-  }
 
-  function buildDrum(){
-    const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
-    svg.setAttribute("viewBox","0 0 520 520");
-    const cx=260,cy=260,r=185;
-    const pads=[{pad:1,x:cx,y:cy}];
-    PERIM.forEach((d,i)=>{
-      const t=d*Math.PI/180;
-      pads.push({pad:i+2,x:cx+r*Math.sin(t),y:cy-r*Math.cos(t)});
-    });
-    pads.forEach(p=>{
-      const g=document.createElementNS(svg.namespaceURI,"g");
-      g.classList.add("tongue"); g.dataset.pad=p.pad;
-      const c=document.createElementNS(svg.namespaceURI,"circle");
-      c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);
-      c.setAttribute("r",p.pad===1?50:38);
-      c.setAttribute("fill","rgba(255,255,255,.9)");
-      c.setAttribute("stroke","rgba(74,26,36,.25)");
-      c.setAttribute("stroke-width","1.4");
-      g.appendChild(c);
-      const t=document.createElementNS(svg.namespaceURI,"text");
-      t.setAttribute("x",p.x);t.setAttribute("y",p.y+5);
-      t.setAttribute("text-anchor","middle");
-      g.appendChild(t);
-      g.onclick=()=>{const n=padNotes[p.pad-1];if(n)play(n,p.pad)}
-      svg.appendChild(g);
-      p.el=g; p.lab=t;
-    });
-    document.getElementById("drumHost").appendChild(svg);
-    return pads;
-  }
+    function getEffectiveNotes() {
+      if (transposeAmount === 0) return selectedNotes;
+      return applyTransposeToSelection(selectedNotes, transposeAmount);
+    }
 
-  function sync(){
-    if(!tongues)tongues=buildDrum();
-    tongues.forEach(t=>{
-      const n=padNotes[t.pad-1];
-      t.lab.textContent=n||"";
-      t.el.classList.toggle("off",!n);
-    });
-  }
+    // -----------------------------
+    // DOM: Note picker
+    // -----------------------------
+    function buildNotePicker() {
+      MASTER_NOTES.forEach((note) => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "note-tile";
+        tile.textContent = note;
+        tile.dataset.note = note;
 
-  function flashPad(p){
-    const t=tongues?.find(x=>x.pad===p); if(!t)return;
-    t.el.classList.add("flash");
-    setTimeout(()=>t.el.classList.remove("flash"),120);
-  }
-  function flashKey(n){
-    const k=picker.querySelector(`.key[data-note="${CSS.escape(n)}"]`);
-    if(!k)return;
-    k.classList.add("flash");
-    setTimeout(()=>k.classList.remove("flash"),140);
-  }
+        tile.addEventListener("click", () => handleTileToggle(note));
 
-  window.addEventListener("keydown",e=>{
-    const p=e.key==="0"?10:+e.key;
-    if(p>=1&&p<=10&&padNotes[p-1])play(padNotes[p-1],p);
-  });
+        notePickerGrid.appendChild(tile);
+        tileMap.set(note, tile);
+      });
+    }
 
-  function render(){
-    recompute();
-    document.getElementById("countPill").textContent=`Selected: ${selectedSet.size} / 10`;
-    buildPicker(); sync();
-  }
+    function handleTileToggle(note) {
+      const isSelected = selectedNotes.includes(note);
 
-  render();
-})();
+      if (isSelected) {
+        selectedNotes = selectedNotes.filter((n) => n !== note);
+      } else {
+        if (selectedNotes.length >= MAX_NOTES) {
+          flashHint("You can select up to 10 notes.", transposeHint);
+          return;
+        }
+        selectedNotes.push(note);
+      }
+
+      selectedNotes = sortNotesAscending(selectedNotes);
+      // Re-clamp transpose if needed with new selection
+      transposeAmount = clampTransposeAmount(transposeAmount);
+      updateTransposeDisplay();
+      renderSelectedNotes();
+      updateTilesSelectionState();
+      rebuildPads();
+      updateUrlState();
+    }
+
+    function updateTilesSelectionState() {
+      tileMap.forEach((tile, note) => {
+        tile.classList.toggle("selected", selectedNotes.includes(note));
+      });
+    }
+
+    function renderSelectedNotes() {
+      selectedNoteList.innerHTML = "";
+
+      const effective = getEffectiveNotes();
+
+      effective.forEach((note, i) => {
+        const pill = document.createElement("div");
+        pill.className = "selected-note-pill";
+        pill.dataset.note = note;
+
+        const idxSpan = document.createElement("span");
+        idxSpan.className = "pill-index";
+        idxSpan.textContent = i + 1;
+
+        const noteSpan = document.createElement("span");
+        noteSpan.textContent = note;
+
+        pill.appendChild(idxSpan);
+        pill.appendChild(noteSpan);
+        selectedNoteList.appendChild(pill);
+      });
+    }
+
+    function flashNoteTile(note) {
+      const tile = tileMap.get(note);
+      if (!tile) return;
+      tile.classList.add("flash");
+      setTimeout(() => tile.classList.remove("flash"), 140);
+    }
+
+    function flashHint(message, targetEl) {
+      if (!targetEl) return;
+      targetEl.textContent = message;
+      setTimeout(() => {
+        if (targetEl.textContent === message) {
+          targetEl.textContent = "";
+        }
+      }, 1500);
+    }
+
+    // -----------------------------
+    // DOM: Pads
+    // -----------------------------
+    function rebuildPads() {
+      // Remove all existing peripheral pads
+      drumShell.querySelectorAll(".drum-pad:not(.drum-pad-center)").forEach((el) =>
+        el.remove()
+      );
+      padMap.clear();
+      padMap.set(0, centerPad);
+
+      const effective = getEffectiveNotes();
+
+      // Assign center note
+      if (effective[0]) {
+        centerNoteSpan.textContent = effective[0];
+      } else {
+        centerNoteSpan.textContent = "";
+      }
+
+      // Peripheral pads
+      const total = Math.min(effective.length, MAX_NOTES);
+      const peripheralCount = Math.max(0, total - 1);
+
+      for (let i = 0; i < peripheralCount; i++) {
+        const padIndex = i + 1; // pad index 1..9 for peripheral
+        const note = effective[padIndex];
+        const angle = PERIPHERAL_ANGLES[i] ?? -90 + (360 * i) / Math.max(1, peripheralCount);
+
+        const pad = document.createElement("button");
+        pad.type = "button";
+        pad.className = "drum-pad";
+        pad.dataset.padIndex = padIndex + ""; // 1..9
+        pad.dataset.angle = angle;
+
+        const numberSpan = document.createElement("span");
+        numberSpan.className = "pad-number";
+        numberSpan.textContent = padIndex + 1; // pad numbers 2..10
+
+        const noteSpan = document.createElement("span");
+        noteSpan.className = "pad-note";
+        noteSpan.dataset.padNote = "";
+        noteSpan.textContent = note ?? "";
+
+        pad.appendChild(numberSpan);
+        pad.appendChild(noteSpan);
+
+        drumShell.appendChild(pad);
+        padMap.set(padIndex, pad);
+
+        positionPad(pad, angle);
+        pad.addEventListener("click", () => handlePadTrigger(padIndex));
+      }
+
+      // Ensure center pad click is wired
+      centerPad.onclick = () => handlePadTrigger(0);
+      centerPad.dataset.padIndex = "0";
+      padMap.set(0, centerPad);
+    }
+
+    function positionPad(pad, angleDeg) {
+      const radius = 38; // percent of shell radius
+      const rad = (angleDeg * Math.PI) / 180;
+      const x = Math.cos(rad) * radius;
+      const y = Math.sin(rad) * radius;
+
+      pad.style.left = 50 + x + "%";
+      pad.style.top = 50 + y + "%";
+      pad.style.transform = "translate(-50%, -50%)";
+    }
+
+    function getPadNote(padIndex) {
+      const effective = getEffectiveNotes();
+      return effective[padIndex] ?? null;
+    }
+
+    function flashPad(padIndex) {
+      const pad = padMap.get(padIndex);
+      if (!pad) return;
+      pad.classList.add("pad-active");
+      setTimeout(() => pad.classList.remove("pad-active"), 160);
+    }
+
+    // -----------------------------
+    // Audio setup
+    // -----------------------------
+    async function ensureAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        compressorNode = audioContext.createDynamicsCompressor();
+        compressorNode.threshold.setValueAtTime(-20, audioContext.currentTime);
+        compressorNode.knee.setValueAtTime(30, audioContext.currentTime);
+        compressorNode.ratio.setValueAtTime(4, audioContext.currentTime);
+        compressorNode.attack.setValueAtTime(0.01, audioContext.currentTime);
+        compressorNode.release.setValueAtTime(0.25, audioContext.currentTime);
+
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.9;
+
+        masterGain.connect(compressorNode);
+        compressorNode.connect(audioContext.destination);
+      }
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+    }
+
+    async function loadSample(note) {
+      if (sampleBuffers.has(note)) return sampleBuffers.get(note);
+      if (isLoadingSample.get(note)) {
+        // wait until loaded
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        return sampleBuffers.get(note);
+      }
+
+      isLoadingSample.set(note, true);
+      try {
+        const url = "samples/" + encodeURIComponent(note) + ".mp3";
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        sampleBuffers.set(note, audioBuffer);
+        return audioBuffer;
+      } catch (e) {
+        console.warn("Failed to load sample for", note, e);
+        return null;
+      } finally {
+        isLoadingSample.set(note, false);
+      }
+    }
+
+    function enforcePolyphonyLimit() {
+      while (activeVoices.length >= POLYPHONY_LIMIT) {
+        const voice = activeVoices.shift();
+        try {
+          voice.source.stop();
+        } catch (_) {}
+      }
+    }
+
+    function registerVoice(source) {
+      activeVoices.push({ source, startedAt: audioContext.currentTime });
+      // Clean up when finished
+      source.onended = () => {
+        const idx = activeVoices.findIndex((v) => v.source === source);
+        if (idx >= 0) activeVoices.splice(idx, 1);
+      };
+    }
+
+    async function playNote(note) {
+      if (!note) return;
+      await ensureAudioContext();
+      const buffer = await loadSample(note);
+      if (!buffer) return;
+
+      enforcePolyphonyLimit();
+
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+
+      const gain = audioContext.createGain();
+      const now = audioContext.currentTime;
+
+      // Simple envelope
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(1, now + 0.02);
+      gain.gain.linearRampToValueAtTime(0.0, now + 2.2);
+
+      source.connect(gain);
+      gain.connect(masterGain);
+
+      registerVoice(source);
+      source.start(now);
+      source.stop(now + 2.3);
+    }
+
+    // -----------------------------
+    // Pad triggering and keyboard
+    // -----------------------------
+    async function triggerPad(padIndex) {
+      const note = getPadNote(padIndex);
+      if (!note) return;
+
+      flashPad(padIndex);
+      flashNoteTile(note);
+      await playNote(note);
+    }
+
+    function handlePadTrigger(padIndex) {
+      triggerPad(padIndex);
+    }
+
+    function handleKeyDown(e) {
+      const key = e.key;
+      let padIndex = null;
+
+      if (key >= "1" && key <= "9") {
+        padIndex = parseInt(key, 10) - 1; // '1' -> 0
+      } else if (key === "0") {
+        padIndex = 9; // pad 10
+      }
+
+      if (padIndex === null) return;
+      if (!padMap.has(padIndex)) return;
+
+      e.preventDefault();
+      triggerPad(padIndex);
+    }
+
+    // -----------------------------
+    // Transpose & sequence
+    // -----------------------------
+    function updateTransposeDisplay() {
+      transposeAmountSpan.textContent = transposeAmount;
+    }
+
+    function handleTranspose(delta) {
+      if (selectedNotes.length === 0) {
+        flashHint("Select at least one note to transpose.", transposeHint);
+        return;
+      }
+      const proposed = transposeAmount + delta;
+      const clamped = clampTransposeAmount(proposed);
+      if (clamped !== proposed) {
+        flashHint("Reached the available tuning range (D3 → B5).", transposeHint);
+      } else {
+        transposeHint.textContent = "";
+      }
+      transposeAmount = clamped;
+      updateTransposeDisplay();
+      renderSelectedNotes();
+      rebuildPads();
+      updateUrlState();
+    }
+
+    async function playSequence() {
+      if (isPlayingSequence) return;
+      const effective = getEffectiveNotes();
+      if (effective.length === 0) {
+        flashHint("No notes selected to play.", transposeHint);
+        return;
+      }
+
+      isPlayingSequence = true;
+      playSequenceBtn.disabled = true;
+
+      for (let i = 0; i < Math.min(effective.length, MAX_NOTES); i++) {
+        await triggerPad(i);
+        await new Promise((resolve) => setTimeout(resolve, SEQUENCE_INTERVAL_MS));
+      }
+
+      isPlayingSequence = false;
+      playSequenceBtn.disabled = false;
+    }
+
+    // -----------------------------
+    // Share link
+    // -----------------------------
+    function updateUrlState() {
+      // Don't mutate the actual URL here (to keep back button sane); share uses this state.
+      // This function is primarily here in case you want to extend later.
+    }
+
+    async function copyShareLink() {
+      const baseUrl = window.location.origin + window.location.pathname;
+      if (selectedNotes.length === 0) {
+        flashHint("Select at least one note before sharing.", shareFeedback);
+        return;
+      }
+
+      // We'll encode the *base* selection and transpose so it can be reconstructed.
+      const params = new URLSearchParams();
+      params.set("notes", selectedNotes.join(","));
+      if (transposeAmount !== 0) {
+        params.set("t", String(transposeAmount));
+      }
+
+      const url = baseUrl + "?" + params.toString();
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+          shareFeedback.textContent = "Link copied to clipboard.";
+        } else {
+          // Fallback: select in a hidden input if needed
+          shareFeedback.textContent = url;
+        }
+      } catch (e) {
+        console.warn("Clipboard copy failed", e);
+        shareFeedback.textContent = url;
+      }
+
+      setTimeout(() => {
+        if (shareFeedback.textContent === "Link copied to clipboard.") {
+          shareFeedback.textContent = "";
+        }
+      }, 2000);
+    }
+
+    function loadStateFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const notesParam = params.get("notes");
+      const tParam = params.get("t");
+
+      let initialSelection = [];
+      if (notesParam) {
+        initialSelection = notesParam
+          .split(",")
+          .map((n) => n.trim())
+          .filter((n) => MASTER_NOTES.includes(n));
+      }
+
+      if (initialSelection.length === 0) {
+        // Default: a simple pentatonic-ish set
+        initialSelection = ["D3", "F3", "G3", "A3", "C4", "D4"];
+      }
+
+      if (initialSelection.length > MAX_NOTES) {
+        initialSelection = initialSelection.slice(0, MAX_NOTES);
+      }
+
+      selectedNotes = sortNotesAscending(initialSelection);
+
+      let t = parseInt(tParam, 10);
+      if (Number.isNaN(t)) t = 0;
+      transposeAmount = clampTransposeAmount(t);
+    }
+
+    // -----------------------------
+    // Init
+    // -----------------------------
+    function init() {
+      buildNotePicker();
+      loadStateFromUrl();
+      updateTilesSelectionState();
+      updateTransposeDisplay();
+      renderSelectedNotes();
+      rebuildPads();
+
+      document.addEventListener("keydown", handleKeyDown);
+      transposeDownBtn.addEventListener("click", () => handleTranspose(-1));
+      transposeUpBtn.addEventListener("click", () => handleTranspose(1));
+      playSequenceBtn.addEventListener("click", playSequence);
+      copyLinkBtn.addEventListener("click", copyShareLink);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
 </script>
-</body>
-</html>
