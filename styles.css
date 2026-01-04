@@ -46,7 +46,7 @@ header.site-header {
   align-items: center;
   justify-content: space-between;
   gap: 2.5rem;
-  position: relative; /* needed for mobile dropdown positioning */
+  position: relative; /* required for mobile dropdown positioning */
 }
 
 .logo-wrap img {
@@ -126,8 +126,8 @@ main {
   letter-spacing: .08em;
   text-transform: uppercase;
   transition: transform .12s ease, box-shadow .12s ease, background-color .2s ease;
-  text-decoration: none; /* removes underline */
-  color: inherit;        /* prevents link blue color */
+  text-decoration: none;
+  color: inherit;
 }
 
 .btn-primary {
@@ -187,7 +187,7 @@ footer.site-footer {
   .hero { grid-template-columns: 1fr; }
 }
 
-/* MOBILE NAV */
+/* MOBILE NAV (UPDATED BREAKPOINT: 1024px) */
 
 .nav-toggle {
   display: none;
@@ -199,7 +199,14 @@ footer.site-footer {
   padding: 0.25rem 0.5rem;
 }
 
-@media (max-width: 768px) {
+/* Desktop / large screens: keep nav visible, hide hamburger */
+@media (min-width: 1025px) {
+  nav.main-nav { display: block; }
+  .nav-toggle { display: none; }
+}
+
+/* Mobile/tablet/desktop-mode mobile: show hamburger, hide nav until opened */
+@media (max-width: 1024px) {
   .nav-toggle {
     display: block;
   }
