@@ -8,15 +8,18 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bodoni+Moda:wght@500;700&display=swap" rel="stylesheet">
 
+  <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
 
+  <!-- Mobile nav toggle (CLASS-BASED, SAFE) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggle = document.querySelector(".nav-toggle");
       const nav = document.querySelector("nav.main-nav");
       if (!toggle || !nav) return;
+
       toggle.addEventListener("click", () => {
-        nav.style.display = nav.style.display === "block" ? "none" : "block";
+        nav.classList.toggle("is-open");
       });
     });
   </script>
@@ -27,10 +30,12 @@
     <div class="header-inner">
 
       <div class="logo-wrap">
-        <img src="https://i0.wp.com/aetherinstruments.com/wp-content/uploads/2024/12/AetherIn.png?w=800&ssl=1"
-             alt="Aether Instruments Logo">
+        <img
+          src="https://i0.wp.com/aetherinstruments.com/wp-content/uploads/2024/12/AetherIn.png?w=800&ssl=1"
+          alt="Aether Instruments Logo">
       </div>
 
+      <!-- MOBILE MENU BUTTON -->
       <button class="nav-toggle" aria-label="Toggle navigation">
         ☰
       </button>
@@ -75,27 +80,14 @@
 
       <div class="hero-side">
         <p><strong>Made with love.</strong><br>
-          Every instrument is cut, shaped, and tuned individually — no mass production,
-          just careful craftsmanship.</p>
+          Every instrument is cut, shaped, and tuned individually.</p>
 
         <p><strong>Accessible by design.</strong><br>
-          Scales are chosen so that every note plays nicely with every other,
-          making it easy to improvise and relax into the sound.</p>
+          Scales are chosen so every note sounds good together.</p>
 
         <p><strong>From my shop to you.</strong><br>
-          Whether you’re a musician, therapist, teacher, or just curious,
-          there’s a drum or flute here for you.</p>
+          Music made for relaxation, curiosity, and joy.</p>
       </div>
-    </section>
-
-    <section class="content-card">
-      <h2>Featured Instruments</h2>
-      <p>
-        This section is styled to match your Aether site.  
-        Replace this paragraph with your own HTML.
-      </p>
-
-      <div id="instrument-grid"></div>
     </section>
   </main>
 
@@ -111,6 +103,3 @@
   </script>
 </body>
 </html>
-
-
-
