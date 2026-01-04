@@ -11,7 +11,7 @@
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Mobile nav toggle (CLASS-BASED, SAFE) -->
+  <!-- Mobile nav toggle (class-based, matches styles.css) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggle = document.querySelector(".nav-toggle");
@@ -35,10 +35,8 @@
           alt="Aether Instruments Logo">
       </div>
 
-      <!-- MOBILE MENU BUTTON -->
-      <button class="nav-toggle" aria-label="Toggle navigation">
-        ☰
-      </button>
+      <!-- Mobile menu button (shows on small screens via CSS) -->
+      <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
 
       <nav class="main-nav">
         <ul>
@@ -73,21 +71,34 @@
         </ul>
 
         <div class="hero-cta-row">
-          <a href="#" class="btn btn-primary">Shop Instruments</a>
+          <a href="shop.html" class="btn btn-primary">Shop Instruments</a>
           <a href="#" class="btn btn-ghost">Learn about my process</a>
         </div>
       </div>
 
       <div class="hero-side">
         <p><strong>Made with love.</strong><br>
-          Every instrument is cut, shaped, and tuned individually.</p>
+          Every instrument is cut, shaped, and tuned individually — no mass production,
+          just careful craftsmanship.</p>
 
         <p><strong>Accessible by design.</strong><br>
-          Scales are chosen so every note sounds good together.</p>
+          Scales are chosen so that every note plays nicely with every other,
+          making it easy to improvise and relax into the sound.</p>
 
         <p><strong>From my shop to you.</strong><br>
-          Music made for relaxation, curiosity, and joy.</p>
+          Whether you’re a musician, therapist, teacher, or just curious,
+          there’s a drum or flute here for you.</p>
       </div>
+    </section>
+
+    <section class="content-card">
+      <h2>Featured Instruments</h2>
+      <p>
+        This section is styled to match your Aether site.
+        Replace this paragraph with your own HTML.
+      </p>
+
+      <div id="instrument-grid"></div>
     </section>
   </main>
 
