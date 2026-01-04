@@ -11,13 +11,15 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="shop.css">
 
+  <!-- Mobile nav toggle (CLASS-BASED, SAFE) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggle = document.querySelector(".nav-toggle");
       const nav = document.querySelector("nav.main-nav");
       if (!toggle || !nav) return;
+
       toggle.addEventListener("click", () => {
-        nav.style.display = nav.style.display === "block" ? "none" : "block";
+        nav.classList.toggle("is-open");
       });
     });
   </script>
@@ -36,7 +38,6 @@
         ☰
       </button>
 
-      
       <nav class="main-nav">
         <ul>
           <li><a href="index.html">Home</a></li>
@@ -78,9 +79,9 @@
 
       // Smash the common quote encodings, including double-escaped forms
       s = s.replace(/&(amp;)*quot;/g, '"');   // &quot; or &amp;quot; or &amp;amp;quot; ...
-      s = s.replace(/&(amp;)*#34;/g, '"');   // &#34; or &amp;#34; ...
-      s = s.replace(/&(amp;)*apos;/g, "'");  // &apos; or &amp;apos;
-      s = s.replace(/&(amp;)*#39;/g, "'");   // &#39; or &amp;#39;
+      s = s.replace(/&(amp;)*#34;/g, '"');    // &#34; or &amp;#34; ...
+      s = s.replace(/&(amp;)*apos;/g, "'");   // &apos; or &amp;apos;
+      s = s.replace(/&(amp;)*#39;/g, "'");    // &#39; or &amp;#39;
 
       // Generic decode pass in case there are other entities
       const txt = document.createElement("textarea");
