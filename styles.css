@@ -187,7 +187,7 @@ footer.site-footer {
   .hero { grid-template-columns: 1fr; }
 }
 
-/* MOBILE NAV (recommended) */
+/* MOBILE NAV */
 
 .nav-toggle {
   display: none;
@@ -196,6 +196,7 @@ footer.site-footer {
   color: white;
   font-size: 1.6rem;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
 }
 
 @media (max-width: 768px) {
