@@ -54,7 +54,11 @@
       flex-wrap:wrap;
       gap:10px;
       align-items:center;
-      margin-bottom:12px;
+      margin-bottom:10px;
+    }
+
+    .controls.presets-row{
+      margin-top:4px;
     }
 
     .pill{
@@ -110,14 +114,19 @@
       display:flex;
       justify-content:center;
       align-items:center;
-      min-height:460px;
+      min-height:420px;
     }
     @media (max-width:600px){
       .drumWrap{
-        min-height:380px;
+        min-height:360px;
       }
     }
-    svg{max-width:100%; height:auto;}
+
+    .drumSvg{
+      max-width:100%;
+      height:auto;
+      display:block;
+    }
 
     .tongue{cursor:pointer}
     .tongue.off{opacity:.25}
@@ -174,7 +183,10 @@
   <section class="content-card">
     <div class="drum-header">
       <h2 class="drum-title">Virtual Tongue Drum</h2>
-      <p>Please select 10 notes. Press numbers 1 through 0 on the keyboard, or click on the tongues to play the corresponding notes.</p>
+      <p>
+        Please select up to 10 notes. Press numbers 1 through 0 on the keyboard,
+        or tap on the tongues to play the corresponding notes.
+      </p>
     </div>
 
     <div class="drum-grid">
@@ -188,12 +200,182 @@
           <button class="btn btn-ghost" id="copyLink" type="button">Copy share link</button>
         </div>
 
+        <!-- Presets -->
+        <div class="controls presets-row">
+          <span class="pill">Presets:</span>
+          <button class="btn btn-ghost" type="button" data-preset="d-min-pent">D minor pentatonic</button>
+          <button class="btn btn-ghost" type="button" data-preset="d-maj-pent">D major pentatonic</button>
+          <button class="btn btn-ghost" type="button" data-preset="d-nat-min">D natural minor</button>
+        </div>
+
         <div class="sep"></div>
         <div id="picker"></div>
       </div>
 
       <div class="panel">
-        <div class="drumWrap" id="drumHost"></div>
+        <div class="drumWrap" id="drumHost">
+          <!-- INLINE SVG DRUM -->
+          <svg viewBox="0 0 520 520" class="drumSvg">
+            <defs>
+              <radialGradient id="drumSkinGrad" cx="30%" cy="20%" r="80%">
+                <stop offset="0%"  stop-color="rgba(248,216,167,0.98)"/>
+                <stop offset="45%" stop-color="rgba(243,194,138,0.98)"/>
+                <stop offset="100%" stop-color="rgba(74,26,36,0.98)"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Shell -->
+            <circle cx="260" cy="260" r="235"
+                    fill="url(#drumSkinGrad)"
+                    stroke="rgba(0,0,0,0.35)"
+                    stroke-width="2" />
+            <circle cx="260" cy="260" r="205"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.45)"
+                    stroke-width="1.8" />
+
+            <!-- Center tongue (pad 1) -->
+            <g class="tongue" data-pad="1">
+              <circle cx="260" cy="260" r="56"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="260" y="265"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- Outer tongues pads 2..10 (pre-positioned) -->
+            <!-- pad 2 -->
+            <g class="tongue" data-pad="2">
+              <circle cx="196.7" cy="433.8" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="196.7" y="438.8"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 3 -->
+            <g class="tongue" data-pad="3">
+              <circle cx="323.3" cy="433.8" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="323.3" y="438.8"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 4 -->
+            <g class="tongue" data-pad="4">
+              <circle cx="99.8" cy="352.5" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="99.8" y="357.5"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 5 -->
+            <g class="tongue" data-pad="5">
+              <circle cx="420.2" cy="352.5" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="420.2" y="357.5"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 6 -->
+            <g class="tongue" data-pad="6">
+              <circle cx="77.8" cy="227.9" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="77.8" y="232.9"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 7 -->
+            <g class="tongue" data-pad="7">
+              <circle cx="442.2" cy="227.9" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="442.2" y="232.9"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 8 -->
+            <g class="tongue" data-pad="8">
+              <circle cx="141.1" cy="118.3" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="141.1" y="123.3"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 9 -->
+            <g class="tongue" data-pad="9">
+              <circle cx="378.9" cy="118.3" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="378.9" y="123.3"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+
+            <!-- pad 10 -->
+            <g class="tongue" data-pad="10">
+              <circle cx="260" cy="75" r="44"
+                      fill="#fdf3dd"
+                      stroke="rgba(74,26,36,0.7)"
+                      stroke-width="2" />
+              <text x="260" y="80"
+                    text-anchor="middle"
+                    font-family="Roboto, system-ui, sans-serif"
+                    font-weight="700"
+                    font-size="15"
+                    fill="#4a1a24"></text>
+            </g>
+          </svg>
+        </div>
       </div>
     </div>
   </section>
@@ -224,9 +406,6 @@
   const MIN_NOTE = "D3";
   const MAX_NOTE = "B5";
 
-  // Pad 2..10 perimeter angles (from UP=0°, CCW+)
-  const PERIM_ANGLES_UP_CCW = [200,160,240,120,280,80,320,40,0];
-
   function noteToMidi(n){
     const m = n.match(/^([A-G]#?)(\d)$/);
     return m ? ((Number(m[2])+1)*12 + SEMI[m[1]]) : null;
@@ -250,8 +429,7 @@
   const MAX_VOICES = 8;
   const activeVoices = []; // BufferSource nodes
 
-  // Simple fixed sustain (in ms)
-  const SUSTAIN_MS = 1500;
+  const SUSTAIN_MS = 1500; // fixed sustain
 
   function ensureAudio(){
     if (!audio) {
@@ -277,15 +455,12 @@
     return "samples/" + encodeURIComponent(note) + ".mp3";
   }
 
-  // Safari-friendly decodeAudioData
   function decodeBuffer(arr){
     return new Promise((resolve, reject) => {
       try {
         if (audio.decodeAudioData.length === 1) {
-          // Promise-style
           audio.decodeAudioData(arr).then(resolve, reject);
         } else {
-          // Callback-style (older iOS Safari)
           audio.decodeAudioData(arr, resolve, reject);
         }
       } catch (e) {
@@ -341,7 +516,7 @@
   }
 
   // -----------------------------
-  // Selection state (pads always sorted ascending frequency)
+  // Selection state
   // -----------------------------
   const selectedSet = new Set();
   let padNotes = []; // index 0..9 corresponds to pads 1..10
@@ -383,7 +558,7 @@
   }
 
   // -----------------------------
-  // Transpose (blocked if any note would clip)
+  // Transpose
   // -----------------------------
   function transposeSelection(semitones){
     if (!selectedSet.size) return;
@@ -475,7 +650,6 @@
     }
   }
 
-  // MOBILE-SAFE: avoid CSS.escape
   function flashKey(note){
     const keys = picker.querySelectorAll(".key");
     let el = null;
@@ -492,133 +666,38 @@
   }
 
   // -----------------------------
-  // Drum SVG (outer skin)
+  // Drum: use existing inline SVG
   // -----------------------------
-  let tongues = null;
+  let tongues = [];
 
-  function buildDrum(){
-  const W = 520, cx = W / 2, cy = W / 2;
-  const svgNS = "http://www.w3.org/2000/svg";
+  function initDrumTongues(){
+    const groups = drumHost.querySelectorAll(".tongue");
+    tongues = [];
+    groups.forEach(g => {
+      const pad = Number(g.getAttribute("data-pad") || "0");
+      const lab = g.querySelector("text");
+      tongues.push({ pad, el:g, lab });
 
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("viewBox", "0 0 520 520");
-
-  // Subtle maroon→gold gradient for the shell, so it's clearly visible
-  const defs = document.createElementNS(svgNS, "defs");
-  const grad = document.createElementNS(svgNS, "radialGradient");
-  grad.setAttribute("id", "drumSkinGrad");
-  grad.setAttribute("cx", "30%");
-  grad.setAttribute("cy", "20%");
-  grad.setAttribute("r", "80%");
-
-  const stop1 = document.createElementNS(svgNS, "stop");
-  stop1.setAttribute("offset", "0%");
-  stop1.setAttribute("stop-color", "rgba(248,216,167,0.95)");
-
-  const stop2 = document.createElementNS(svgNS, "stop");
-  stop2.setAttribute("offset", "45%");
-  stop2.setAttribute("stop-color", "rgba(243,194,138,0.95)");
-
-  const stop3 = document.createElementNS(svgNS, "stop");
-  stop3.setAttribute("offset", "100%");
-  stop3.setAttribute("stop-color", "rgba(74,26,36,0.95)");
-
-  grad.appendChild(stop1);
-  grad.appendChild(stop2);
-  grad.appendChild(stop3);
-  defs.appendChild(grad);
-  svg.appendChild(defs);
-
-  // Outer shell
-  const skin = document.createElementNS(svgNS, "circle");
-  skin.setAttribute("cx", cx);
-  skin.setAttribute("cy", cy);
-  skin.setAttribute("r", 235);
-  skin.setAttribute("fill", "url(#drumSkinGrad)");
-  skin.setAttribute("stroke", "rgba(0,0,0,0.35)");
-  skin.setAttribute("stroke-width", "2");
-  svg.appendChild(skin);
-
-  // Slight inner ring
-  const ring = document.createElementNS(svgNS, "circle");
-  ring.setAttribute("cx", cx);
-  ring.setAttribute("cy", cy);
-  ring.setAttribute("r", 205);
-  ring.setAttribute("fill", "none");
-  ring.setAttribute("stroke", "rgba(255,255,255,0.45)");
-  ring.setAttribute("stroke-width", "1.8");
-  svg.appendChild(ring);
-
-  const out = [];
-  const rMid = 185;
-
-  // Pad 1 center
-  out.push({ pad: 1, x: cx, y: cy });
-
-  // Pads 2..10 around perimeter
-  PERIM_ANGLES_UP_CCW.forEach((deg, i) => {
-    const theta = (deg * Math.PI) / 180;
-    const x = cx + rMid * Math.sin(theta);
-    const y = cy - rMid * Math.cos(theta);
-    out.push({ pad: i + 2, x, y });
-  });
-
-  out.forEach((t) => {
-    const g = document.createElementNS(svgNS, "g");
-    g.classList.add("tongue");
-    g.dataset.pad = String(t.pad);
-
-    const circ = document.createElementNS(svgNS, "circle");
-    circ.setAttribute("cx", t.x);
-    circ.setAttribute("cy", t.y);
-    circ.setAttribute("r", t.pad === 1 ? 56 : 44);
-    // Tongues: light gold on maroon shell with clear border
-    circ.setAttribute("fill", "#fdf3dd");
-    circ.setAttribute("stroke", "rgba(74,26,36,0.7)");
-    circ.setAttribute("stroke-width", "2");
-    g.appendChild(circ);
-
-    const lab = document.createElementNS(svgNS, "text");
-    lab.setAttribute("x", t.x);
-    lab.setAttribute("y", t.y + 5);
-    lab.setAttribute("text-anchor", "middle");
-    lab.setAttribute("font-family", "Roboto, system-ui, sans-serif");
-    lab.setAttribute("font-weight", "700");
-    lab.setAttribute("font-size", "15");
-    lab.setAttribute("fill", "#4a1a24");
-    g.appendChild(lab);
-
-    g.onclick = async () => {
-      ensureAudio();
-      const n = padNotes[t.pad - 1];
-      if (!n) return;
-      await triggerPlay(n, t.pad);
-    };
-
-    t.el = g;
-    t.lab = lab;
-    svg.appendChild(g);
-  });
-
-  drumHost.innerHTML = "";
-  drumHost.appendChild(svg);
-  return out;
-}
-
+      g.onclick = async () => {
+        ensureAudio();
+        const n = padNotes[pad - 1];
+        if (!n) return;
+        await triggerPlay(n, pad);
+      };
+    });
+  }
 
   function syncDrum(){
-    if (!tongues) tongues = buildDrum();
+    if (!tongues.length) initDrumTongues();
     tongues.forEach(t => {
       const n = padNotes[t.pad - 1];
       t.lab.textContent = n || "";
       t.el.classList.toggle("off", !n);
-      t.lab.setAttribute("fill", n ? "#1d1d22" : "#55556d");
-      t.lab.setAttribute("font-weight", n ? "800" : "700");
     });
   }
 
   function flashPad(pad){
-    if (!tongues) return;
+    if (!tongues.length) return;
     const t = tongues.find(x => x.pad === pad);
     if (!t || !t.el) return;
     t.el.classList.add("flash");
@@ -633,7 +712,7 @@
   }
 
   // -----------------------------
-  // Keyboard mapping: 1..9 => pads 1..9, 0 => pad 10
+  // Keyboard mapping
   // -----------------------------
   window.addEventListener("keydown", async (e) => {
     const tag = (e.target && e.target.tagName || "").toLowerCase();
@@ -653,6 +732,41 @@
   });
 
   // -----------------------------
+  // Presets
+  // -----------------------------
+  const PRESETS = {
+    "d-min-pent": [
+      "D3","F3","G3","A3","C4","D4","F4","G4","A4","C5"
+    ],
+    "d-maj-pent": [
+      "D3","E3","F#3","A3","B3","D4","E4","F#4","A4","B4"
+    ],
+    "d-nat-min": [
+      "D3","E3","F3","G3","A3","A#3","C4","D4","E4","F4"
+    ]
+  };
+
+  function applyPreset(key){
+    const notes = PRESETS[key];
+    if (!notes) return;
+    selectedSet.clear();
+    for (const n of notes){
+      const m = noteToMidi(n);
+      if (m == null || m < minMidi() || m > maxMidi()) continue;
+      selectedSet.add(n);
+      if (selectedSet.size >= MAX_NOTES) break;
+    }
+    render();
+  }
+
+  document.querySelectorAll("[data-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.getAttribute("data-preset");
+      applyPreset(key);
+    });
+  });
+
+  // -----------------------------
   // Controls
   // -----------------------------
   document.getElementById("clear").onclick = () => {
@@ -662,7 +776,7 @@
 
   document.getElementById("playSeq").onclick = async () => {
     ensureAudio();
-    recomputePads(); // ensure current pad order
+    recomputePads();
     for (let i = 0; i < padNotes.length; i++){
       const note = padNotes[i];
       const pad = i + 1;
@@ -686,6 +800,7 @@
   }
 
   initFromURL();
+  initDrumTongues();
   render();
 })();
 </script>
