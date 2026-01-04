@@ -187,7 +187,7 @@ footer.site-footer {
   .hero { grid-template-columns: 1fr; }
 }
 
-/* MOBILE NAV (UPDATED BREAKPOINT: 1024px) */
+/* MOBILE NAV (updated breakpoint + visibility fixes) */
 
 .nav-toggle {
   display: none;
@@ -207,8 +207,22 @@ footer.site-footer {
 
 /* Mobile/tablet/desktop-mode mobile: show hamburger, hide nav until opened */
 @media (max-width: 1024px) {
+  /* Make header less cramped on phones */
+  .logo-wrap img {
+    height: 84px;
+  }
+
+  /* Make hamburger clearly visible */
   .nav-toggle {
     display: block;
+    opacity: 1;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 0.35rem 0.6rem;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
 
   nav.main-nav {
