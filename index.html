@@ -11,7 +11,7 @@
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Mobile nav toggle (class-based, matches styles.css) -->
+  <!-- Mobile nav toggle -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggle = document.querySelector(".nav-toggle");
@@ -35,7 +35,6 @@
           alt="Aether Instruments Logo">
       </div>
 
-      <!-- Mobile menu button (shows on small screens via CSS) -->
       <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
 
       <nav class="main-nav">
@@ -53,6 +52,7 @@
 
   <main>
     <section class="hero">
+      <!-- LEFT: main hero text -->
       <div>
         <p class="hero-tagline">Instruments for everyone</p>
 
@@ -65,18 +65,18 @@
           and designed so that even complete beginners can make beautiful music.
         </p>
 
-        <!-- NEW: subtle 3-image row inside hero (supporting, not distracting) -->
+        <!-- Subtle embedded images -->
         <div class="hero-image-row" aria-label="Aether instruments preview images">
           <figure class="hero-image">
-            <img src="img/Drum_w_Texture.png" alt="Handcrafted tongue drum">
+            <img src="img/placeholder-drum.jpg" alt="Handcrafted tongue drum">
           </figure>
 
           <figure class="hero-image">
-            <img src="img/Drone_Olive.jpg" alt="Native American style flute">
+            <img src="img/placeholder-flute.jpg" alt="Native American style flute">
           </figure>
 
           <figure class="hero-image">
-            <img src="img/Hammering.jpeg" alt="Workshop process and tools">
+            <img src="img/placeholder-workshop.jpg" alt="Workshop process and tools">
           </figure>
         </div>
 
@@ -92,6 +92,7 @@
         </div>
       </div>
 
+      <!-- RIGHT: supporting copy + image -->
       <div class="hero-side">
         <p><strong>Made with love.</strong><br>
           Every instrument is cut, shaped, and tuned individually — no mass production,
@@ -104,17 +105,14 @@
         <p><strong>From my shop to you.</strong><br>
           Whether you’re a musician, therapist, teacher, or just curious,
           there’s a drum or flute here for you.</p>
+
+        <!-- NEW: image under "From my shop to you" -->
+        <figure class="hero-image hero-side-image">
+          <img
+            src="img/placeholder-connection.jpg"
+            alt="Finished instrument ready to be played">
+        </figure>
       </div>
-    </section>
-
-    <section class="content-card">
-      <h2>Featured Instruments</h2>
-      <p>
-        This section is styled to match your Aether site.
-        Replace this paragraph with your own HTML.
-      </p>
-
-      <div id="instrument-grid"></div>
     </section>
   </main>
 
@@ -130,4 +128,3 @@
   </script>
 </body>
 </html>
-
