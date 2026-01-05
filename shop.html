@@ -11,19 +11,6 @@
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="shop.css">
-
-  <!-- Mobile nav toggle (class-based, matches styles.css) -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggle = document.querySelector(".nav-toggle");
-      const nav = document.querySelector("nav.main-nav");
-      if (!toggle || !nav) return;
-
-      toggle.addEventListener("click", () => {
-        nav.classList.toggle("is-open");
-      });
-    });
-  </script>
 </head>
 
 <body>
@@ -36,9 +23,7 @@
           alt="Aether Instruments Logo">
       </div>
 
-      <!-- Mobile menu button (shows on small screens via CSS) -->
-      <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
-
+      <!-- Nav gets injected here (includes the hamburger button inside the partial) -->
       <div id="site-nav"></div>
 
     </div>
@@ -165,22 +150,34 @@
     loadListings();
   </script>
 
+  <!-- Load nav partial + mark active + init mobile toggle AFTER injection -->
   <script>
-  async function loadNav(activeKey) {
-    const mount = document.getElementById("site-nav");
-    if (!mount) return;
+    async function loadNav(activeKey) {
+      const mount = document.getElementById("site-nav");
+      if (!mount) return;
 
-    const res = await fetch("partials/nav.html", { cache: "no-cache" });
-    mount.innerHTML = await res.text();
+      const res = await fetch("partials/nav.html", { cache: "no-cache" });
+      mount.innerHTML = await res.text();
 
-    // mark active link
-    const active = mount.querySelector(`[data-nav="${activeKey}"]`);
-    if (active) active.classList.add("active");
-  }
-  </script>
+      // mark active link
+      const active = mount.querySelector(`[data-nav="${activeKey}"]`);
+      if (active) active.classList.add("active");
 
-  <script>
-  loadNav("shop");
+      // init mobile toggle (nav exists now)
+      const nav = mount.querySelector(".main-nav");
+      const toggle = mount.querySelector(".nav-toggle");
+      if (nav && toggle) {
+        // optional: ensure button doesn't act like a submit button if ever inside a form
+        if (!toggle.hasAttribute("type")) toggle.setAttribute("type", "button");
+
+        toggle.addEventListener("click", () => {
+          const isOpen = nav.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+    }
+
+    loadNav("shop");
   </script>
 
 </body>
