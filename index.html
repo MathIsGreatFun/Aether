@@ -37,15 +37,7 @@
 
       <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
 
-      <nav class="main-nav">
-        <ul>
-          <li><a href="#" class="active">Home</a></li>
-          <li><a href="shop.html">Shop</a></li>
-          <li><a href="drum_sample.html">Virtual Drum</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </nav>
+      <div id="site-nav"></div>
 
     </div>
   </header>
@@ -126,8 +118,29 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+
+  <script>
+  async function loadNav(activeKey) {
+    const mount = document.getElementById("site-nav");
+    if (!mount) return;
+
+    const res = await fetch("partials/nav.html", { cache: "no-cache" });
+    mount.innerHTML = await res.text();
+
+    // mark active link
+    const active = mount.querySelector(`[data-nav="${activeKey}"]`);
+    if (active) active.classList.add("active");
+  }
+  </script>
+
+  
+  <script>
+  loadNav("home");
+  </script>
+
 </body>
 </html>
+
 
 
 
