@@ -10,19 +10,6 @@
 
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Mobile nav toggle -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggle = document.querySelector(".nav-toggle");
-      const nav = document.querySelector("nav.main-nav");
-      if (!toggle || !nav) return;
-
-      toggle.addEventListener("click", () => {
-        nav.classList.toggle("is-open");
-      });
-    });
-  </script>
 </head>
 
 <body>
@@ -35,8 +22,7 @@
           alt="Aether Instruments Logo">
       </div>
 
-      <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
-
+      <!-- Nav gets injected here -->
       <div id="site-nav"></div>
 
     </div>
@@ -44,7 +30,6 @@
 
   <main>
     <section class="hero">
-      <!-- LEFT: main hero text -->
       <div>
         <p class="hero-tagline">Instruments for everyone</p>
 
@@ -57,18 +42,15 @@
           and designed so that even complete beginners can make beautiful music.
         </p>
 
-        <!-- Subtle embedded images -->
         <div class="hero-image-row" aria-label="Aether instruments preview images">
           <figure class="hero-image">
             <img src="img/Drum_w_Texture.png" alt="Handcrafted tongue drum">
           </figure>
-
           <figure class="hero-image">
             <img src="img/Drone_Olive.jpg" alt="Native American style flute">
           </figure>
-
           <figure class="hero-image">
-            <img src="img/Kurd 16_5.jpg" alt="Handcrafted 16.5" tongue drum">
+            <img src="img/Kurd 16_5.jpg" alt="Handcrafted 16.5 inch tongue drum">
           </figure>
         </div>
 
@@ -84,7 +66,6 @@
         </div>
       </div>
 
-      <!-- RIGHT: supporting copy + image -->
       <div class="hero-side">
         <p><strong>Made with love.</strong><br>
           Every instrument is cut, shaped, and tuned individually — no mass production,
@@ -98,11 +79,8 @@
           Whether you’re a musician, therapist, teacher, or just curious,
           there’s a drum or flute here for you.</p>
 
-        <!-- NEW: image under "From my shop to you" -->
         <figure class="hero-image hero-side-image">
-          <img
-            src="img/Working.jpeg"
-            alt="Working">
+          <img src="img/Working.jpeg" alt="Working in the shop">
         </figure>
       </div>
     </section>
@@ -119,28 +97,30 @@
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
+  <!-- Load nav + init mobile toggle -->
   <script>
-  async function loadNav(activeKey) {
-    const mount = document.getElementById("site-nav");
-    if (!mount) return;
+    async function loadNav(activeKey) {
+      const mount = document.getElementById("site-nav");
+      if (!mount) return;
 
-    const res = await fetch("partials/nav.html", { cache: "no-cache" });
-    mount.innerHTML = await res.text();
+      const res = await fetch("partials/nav.html", { cache: "no-cache" });
+      mount.innerHTML = await res.text();
 
-    // mark active link
-    const active = mount.querySelector(`[data-nav="${activeKey}"]`);
-    if (active) active.classList.add("active");
-  }
+      // mark active link
+      const active = mount.querySelector(`[data-nav="${activeKey}"]`);
+      if (active) active.classList.add("active");
+
+      // mobile toggle
+      const nav = mount.querySelector(".main-nav");
+      const toggle = mount.querySelector(".nav-toggle");
+      if (nav && toggle) {
+        toggle.addEventListener("click", () => {
+          nav.classList.toggle("is-open");
+        });
+      }
+    }
+
+    loadNav("home");
   </script>
-
-  
-  <script>
-  loadNav("home");
-  </script>
-
 </body>
 </html>
-
-
-
-
