@@ -46,7 +46,7 @@ header.site-header {
   align-items: center;
   justify-content: space-between;
   gap: 2.5rem;
-  position: relative; /* required for mobile dropdown positioning */
+  position: relative; /* used for dropdown positioning */
 }
 
 .logo-wrap img {
@@ -187,34 +187,58 @@ footer.site-footer {
   .hero { grid-template-columns: 1fr; }
 }
 
-/* MOBILE NAV (updated breakpoint + visibility fixes) */
+/* =========================================================
+   MOBILE NAV (FIXED FOR PARTIAL-LOADED NAV)
+   - Keep <nav> visible (so button can show)
+   - Hide/show the <ul> with .is-open
+   ========================================================= */
 
-.nav-toggle {
+/* Default: hamburger hidden on desktop */
+nav.main-nav .nav-toggle {
   display: none;
   background: none;
   border: none;
   color: white;
-  font-size: 1.6rem;
+  font-size: 1.05rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
 }
 
-/* Desktop / large screens: keep nav visible, hide hamburger */
+/* Desktop / large screens */
 @media (min-width: 1025px) {
-  nav.main-nav { display: block; }
-  .nav-toggle { display: none; }
+  nav.main-nav ul {
+    display: flex;
+    position: static;
+    flex-direction: row;
+    gap: 2.3rem;
+    background: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  nav.main-nav .nav-toggle {
+    display: none;
+  }
 }
 
-/* Mobile/tablet/desktop-mode mobile: show hamburger, hide nav until opened */
+/* Mobile/tablet */
 @media (max-width: 1024px) {
-  /* Make header less cramped on phones */
+  /* Slightly smaller logo on phones */
   .logo-wrap img {
     height: 84px;
   }
 
-  /* Make hamburger clearly visible */
-  .nav-toggle {
+  /* Keep nav container visible so the button is visible */
+  nav.main-nav {
     display: block;
+    position: relative;
+  }
+
+  /* Hamburger button */
+  nav.main-nav .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     opacity: 1;
     color: #ffffff;
     background: rgba(0, 0, 0, 0.25);
@@ -225,25 +249,28 @@ footer.site-footer {
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
 
-  nav.main-nav {
+  /* Hide links by default */
+  nav.main-nav ul {
     display: none;
+
     position: absolute;
-    top: 100%;
-    right: 1.75rem;
+    top: calc(100% + 0.6rem);
+    right: 0;
+
     background: linear-gradient(to bottom, var(--header-top), var(--header-bottom));
     border-radius: 12px;
     padding: 0.75rem 1.25rem;
     box-shadow: 0 12px 24px rgba(0,0,0,0.35);
     z-index: 200;
-  }
 
-  nav.main-nav ul {
     flex-direction: column;
     gap: 1rem;
+    min-width: 220px;
   }
 
-  nav.main-nav.is-open {
-    display: block;
+  /* Show links when open */
+  nav.main-nav.is-open ul {
+    display: flex;
   }
 }
 
@@ -271,7 +298,6 @@ footer.site-footer {
   border-radius: 14px;
   object-fit: cover;
 
-  /* gentle, elegant presence */
   background: rgba(80, 18, 24, 0.06);
   border: 1px solid rgba(80, 18, 24, 0.16);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
@@ -293,7 +319,7 @@ footer.site-footer {
     gap: 0.65rem;
   }
   .hero-image {
-    max-width: none; /* lets images size naturally within the row */
+    max-width: none;
   }
 }
 
@@ -306,18 +332,17 @@ footer.site-footer {
 
 /* Upsize the right-side hero image */
 .hero-side-image {
-  max-width: 280px; /* was effectively ~140px via hero-image */
+  max-width: 280px;
 }
 
-/* FORCE the right-side hero image to be ~2x larger */
 .hero-side .hero-side-image.hero-image {
-  max-width: 280px;   /* doubles 140px */
+  max-width: 280px;
   width: 100%;
 }
 
 .hero-side .hero-side-image.hero-image img {
   width: 100%;
-  max-width: 280px;   /* belt + suspenders */
+  max-width: 280px;
   height: auto;
   display: block;
 }
@@ -348,7 +373,7 @@ footer.site-footer {
 
 /* IMAGES — match hero style */
 .about-image img {
-  width: 380px;          /* ← about 3–4 inches visually */
+  width: 380px;
   max-width: 100%;
   border-radius: 14px;
   box-shadow: var(--shadow-soft);
