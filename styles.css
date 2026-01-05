@@ -308,3 +308,16 @@ footer.site-footer {
 .hero-side-image {
   max-width: 280px; /* was effectively ~140px via hero-image */
 }
+
+/* FORCE the right-side hero image to be ~2x larger */
+.hero-side .hero-side-image.hero-image {
+  max-width: 280px;   /* doubles 140px */
+  width: 100%;
+}
+
+.hero-side .hero-side-image.hero-image img {
+  width: 100%;
+  max-width: 280px;   /* belt + suspenders */
+  height: auto;
+  display: block;
+}
