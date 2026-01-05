@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <title>About – Aether Instruments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bodoni+Moda:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Site styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Mobile nav toggle -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggle = document.querySelector(".nav-toggle");
+      const nav = document.querySelector("nav.main-nav");
+      if (!toggle || !nav) return;
+
+      toggle.addEventListener("click", () => {
+        nav.classList.toggle("is-open");
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+
+      <div class="logo-wrap">
+        <img
+          src="img/AetherInLogo.png"
+          alt="Aether Instruments Logo">
+      </div>
+
+      <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
+
+      <div id="site-nav"></div>
+
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <h1>About Aether Instruments</h1>
+        <p class="page-hero-subtitle">
+          Handcrafted tongue drums and flutes, built one at a time in a small Arizona shop —
+          where music, craft, and soul all meet.
+        </p>
+      </div>
+    </section>
+
+    <section class="about-sections">
+
+      <!-- Block 1: image left, text right -->
+      <article class="about-block">
+        <figure class="about-image about-image-left">
+          <!-- Replace with your own photo -->
+          <img src="img/MilosinShop1.jpeg" alt="Handcrafted instruments in the workshop">
+        </figure>
+        <div class="about-text">
+          <p>
+            For more than fourteen years, I’ve been immersed in the craft of building musical instruments by hand.
+            My journey began in woodworking, where I spent many years creating guitars, banjos, ukuleles, bass guitars,
+            and cigar box guitars. When I discovered tongue drums, I also discovered a love for metalworking, and since
+            then I’ve built over fifty tongue drums and a couple dozen flutes. Every instrument is shaped slowly,
+            intentionally, and with deep respect for the materials and the music they will one day carry.
+          </p>
+        </div>
+      </article>
+
+      <!-- Block 2: text left, image right -->
+      <article class="about-block about-block-alt">
+        <div class="about-text">
+          <p>
+            I’ve always believed that music has the power to heal and restore the soul. That belief guides everything I make.
+            My goal is to create instruments that are both functional and artistic—objects of beauty meant to be held,
+            admired, and played. I design them to be accessible to beginners while still offering depth and richness
+            for seasoned musicians. At the end of the day, I simply love working with my hands and sharing instruments
+            that invite people into the joy of music.
+          </p>
+        </div>
+        <figure class="about-image about-image-right">
+          <!-- Replace with your own photo -->
+          <img src="img/Hammering.jpeg" alt="Hammering">
+        </figure>
+      </article>
+
+      <!-- Block 3: image left, text right -->
+      <article class="about-block">
+        <figure class="about-image about-image-left">
+          <!-- Replace with your own photo -->
+          <img src="img/Working.jpeg" alt="Flute and tongue drum in a peaceful setting">
+        </figure>
+        <div class="about-text">
+          <p>
+            For me, building instruments is more than a craft—it’s a quiet spiritual journey.
+            The scent of wood shavings, the ring of shaped metal, the subtle shift of grain beneath my fingertips…
+            all of it pulls me into a place of calm reflection. Even when I’m away from the workbench, my mind drifts
+            back to new shapes, new tones, new creations waiting to be born. Each instrument feels like a conversation
+            between heart, hand, and material—and I’m simply grateful to be a part of it.
+          </p>
+        </div>
+      </article>
+
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>&copy; <span id="year"></span> Aether Instruments. All rights reserved.</span>
+      <span>Handcrafted in Arizona · <a href="#">Privacy Policy</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+    async function loadNav(activeKey) {
+      const mount = document.getElementById("site-nav");
+      if (!mount) return;
+
+      const res = await fetch("partials/nav.html", { cache: "no-cache" });
+      mount.innerHTML = await res.text();
+
+      // mark active link
+      const active = mount.querySelector(`[data-nav="${activeKey}"]`);
+      if (active) active.classList.add("active");
+    }
+  </script>
+
+  <script>
+    loadNav("about");
+  </script>
+
+</body>
+</html>
