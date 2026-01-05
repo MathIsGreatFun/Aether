@@ -11,16 +11,6 @@
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Mobile nav toggle -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggle = document.querySelector(".nav-toggle");
-      const nav = document.querySelector("nav.main-nav");
-      if (!toggle || !nav) return;
-      toggle.addEventListener("click", () => nav.classList.toggle("is-open"));
-    });
-  </script>
-
   <!-- Drum page styles (scoped) -->
   <style>
     .drum-page .content-card{ margin-top:18px }
@@ -175,8 +165,7 @@
         alt="Aether Instruments Logo">
     </div>
 
-    <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
-
+    <!-- Nav gets injected here (includes hamburger button inside the partial) -->
     <div id="site-nav"></div>
   </div>
 </header>
@@ -251,7 +240,6 @@
             </g>
 
             <!-- Outer tongues pads 2..10 (pre-positioned) -->
-            <!-- pad 2 -->
             <g class="tongue" data-pad="2">
               <circle cx="196.7" cy="433.8" r="44"
                       fill="#fdf3dd"
@@ -265,7 +253,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 3 -->
             <g class="tongue" data-pad="3">
               <circle cx="323.3" cy="433.8" r="44"
                       fill="#fdf3dd"
@@ -279,7 +266,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 4 -->
             <g class="tongue" data-pad="4">
               <circle cx="99.8" cy="352.5" r="44"
                       fill="#fdf3dd"
@@ -293,7 +279,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 5 -->
             <g class="tongue" data-pad="5">
               <circle cx="420.2" cy="352.5" r="44"
                       fill="#fdf3dd"
@@ -307,7 +292,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 6 -->
             <g class="tongue" data-pad="6">
               <circle cx="77.8" cy="227.9" r="44"
                       fill="#fdf3dd"
@@ -321,7 +305,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 7 -->
             <g class="tongue" data-pad="7">
               <circle cx="442.2" cy="227.9" r="44"
                       fill="#fdf3dd"
@@ -335,7 +318,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 8 -->
             <g class="tongue" data-pad="8">
               <circle cx="141.1" cy="118.3" r="44"
                       fill="#fdf3dd"
@@ -349,7 +331,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 9 -->
             <g class="tongue" data-pad="9">
               <circle cx="378.9" cy="118.3" r="44"
                       fill="#fdf3dd"
@@ -363,7 +344,6 @@
                     fill="#4a1a24"></text>
             </g>
 
-            <!-- pad 10 -->
             <g class="tongue" data-pad="10">
               <circle cx="260" cy="75" r="44"
                       fill="#fdf3dd"
@@ -830,7 +810,8 @@
 })();
 </script>
 
-  <script>
+<!-- Load nav partial + mark active + init mobile toggle AFTER injection -->
+<script>
   async function loadNav(activeKey) {
     const mount = document.getElementById("site-nav");
     if (!mount) return;
@@ -841,13 +822,23 @@
     // mark active link
     const active = mount.querySelector(`[data-nav="${activeKey}"]`);
     if (active) active.classList.add("active");
+
+    // init mobile toggle (nav exists now)
+    const nav = mount.querySelector(".main-nav");
+    const toggle = mount.querySelector(".nav-toggle");
+    if (nav && toggle) {
+      if (!toggle.hasAttribute("type")) toggle.setAttribute("type", "button");
+      if (!toggle.hasAttribute("aria-expanded")) toggle.setAttribute("aria-expanded", "false");
+
+      toggle.addEventListener("click", () => {
+        const isOpen = nav.classList.toggle("is-open");
+        toggle.setAttribute("aria-expanded", String(isOpen));
+      });
+    }
   }
-  </script>
 
-  <script>
   loadNav("drum");
-  </script>
+</script>
 
-  
 </body>
 </html>
