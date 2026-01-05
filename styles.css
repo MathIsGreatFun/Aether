@@ -303,3 +303,8 @@ footer.site-footer {
     transition: none;
   }
 }
+
+/* Upsize the right-side hero image */
+.hero-side-image {
+  max-width: 280px; /* was effectively ~140px via hero-image */
+}
