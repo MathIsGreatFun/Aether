@@ -246,3 +246,60 @@ footer.site-footer {
     display: block;
   }
 }
+
+/* =========================================================
+   HERO: subtle 3-image row embedded into the hero text block
+   ========================================================= */
+
+.hero-image-row {
+  display: flex;
+  gap: 0.85rem;
+  margin: 1.1rem 0 1.35rem;
+  align-items: center;
+}
+
+.hero-image {
+  margin: 0;
+  flex: 1;
+  max-width: 140px; /* keeps images present but not dominant */
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  object-fit: cover;
+
+  /* gentle, elegant presence */
+  background: rgba(80, 18, 24, 0.06);
+  border: 1px solid rgba(80, 18, 24, 0.16);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  opacity: 0.95;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+/* subtle hover polish (desktop only) */
+@media (hover: hover) {
+  .hero-image img:hover {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
+
+/* mobile: allow them to breathe and stay readable */
+@media (max-width: 600px) {
+  .hero-image-row {
+    gap: 0.65rem;
+  }
+  .hero-image {
+    max-width: none; /* lets images size naturally within the row */
+  }
+}
+
+/* accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-image img {
+    transition: none;
+  }
+}
