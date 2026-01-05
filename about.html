@@ -10,19 +10,6 @@
 
   <!-- Site styles -->
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Mobile nav toggle -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggle = document.querySelector(".nav-toggle");
-      const nav = document.querySelector("nav.main-nav");
-      if (!toggle || !nav) return;
-
-      toggle.addEventListener("click", () => {
-        nav.classList.toggle("is-open");
-      });
-    });
-  </script>
 </head>
 
 <body>
@@ -34,8 +21,7 @@
           alt="Aether Instruments Logo">
       </div>
 
-      <button class="nav-toggle" aria-label="Toggle navigation">☰ Menu</button>
-
+      <!-- Nav gets injected here (includes hamburger button inside the partial) -->
       <div id="site-nav"></div>
     </div>
   </header>
@@ -114,6 +100,7 @@
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
+  <!-- Load nav partial + mark active + init mobile toggle AFTER injection -->
   <script>
     async function loadNav(activeKey) {
       const mount = document.getElementById("site-nav");
@@ -125,10 +112,21 @@
       // mark active link
       const active = mount.querySelector(`[data-nav="${activeKey}"]`);
       if (active) active.classList.add("active");
-    }
-  </script>
 
-  <script>
+      // init mobile toggle (nav exists now)
+      const nav = mount.querySelector(".main-nav");
+      const toggle = mount.querySelector(".nav-toggle");
+      if (nav && toggle) {
+        if (!toggle.hasAttribute("type")) toggle.setAttribute("type", "button");
+        if (!toggle.hasAttribute("aria-expanded")) toggle.setAttribute("aria-expanded", "false");
+
+        toggle.addEventListener("click", () => {
+          const isOpen = nav.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+    }
+
     loadNav("about");
   </script>
 
