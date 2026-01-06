@@ -2,83 +2,103 @@
 <html lang="en-US">
 <head>
   <meta charset="UTF-8" />
-  <title>Contact Form</title>
+  <title>Contact – Aether Instruments</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background-color: #f5f5f7;
-      margin: 0;
-      padding: 0;
-    }
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bodoni+Moda:wght@500;700&display=swap" rel="stylesheet">
 
-    .container {
-      max-width: 600px;
-      margin: 60px auto;
-      background: white;
-      padding: 24px 28px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 26px;
-      color: #222;
-      text-align: center;
-    }
-
-    label {
-      display: block;
-      margin-top: 16px;
-      font-weight: 600;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-    }
-
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #8884ff;
-    }
-
-    .note {
-      font-size: 13px;
-      color: #666;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: #6a4ccf;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #5537bc;
-    }
-  </style>
+  <!-- Site styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <img src="img/AetherInLogo.png" alt="Aether Instruments Logo">
+      </div>
 
-  <div class="container">
-    <h1>Contact Me</h1>
+      <div id="site-nav"></div>
+    </div>
+  </header>
 
-    <form>
-      <label for="name">Name *</label>
-      <input type="text" id="name" name="name" required />
+  <main>
+    <section class="hero hero-about">
+      <div>
+        <h1 class="hero-heading">Contact Me</h1>
 
-      <
+        <p class="hero-subtitle">
+          I’d love to hear from you. Please fill out the form below and I will get back to you shortly.
+        </p>
+
+        <form 
+          action="mailto:aetherinstruments@gmail.com"
+          method="POST"
+          enctype="text/plain"
+          style="margin-top: 2rem; max-width: 720px;"
+        >
+
+          <label for="name">Name *</label>
+          <input type="text" id="name" name="Name" required>
+
+          <label for="email">Contact Email *</label>
+          <input type="email" id="email" name="Email" required>
+
+          <label for="phone">Phone Number (Optional)</label>
+          <input type="tel" id="phone" name="Phone">
+
+          <label for="message">Message *</label>
+          <textarea id="message" name="Message" rows="6" required></textarea>
+
+          <button type="submit" style="margin-top: 1.5rem;">
+            Send Message
+          </button>
+        </form>
+
+        <div style="clear: both;"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>&copy; <span id="year"></span> Aether Instruments. All rights reserved.</span>
+      <span>Handcrafted in Arizona · <a href="#">Privacy Policy</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+    async function loadNav(activeKey) {
+      const mount = document.getElementById("site-nav");
+      if (!mount) return;
+
+      const res = await fetch("partials/nav.html", { cache: "no-cache" });
+      mount.innerHTML = await res.text();
+
+      const active = mount.querySelector(`[data-nav="${activeKey}"]`);
+      if (active) active.classList.add("active");
+
+      const nav = mount.querySelector(".main-nav");
+      const toggle = mount.querySelector(".nav-toggle");
+
+      if (nav && toggle) {
+        if (!toggle.hasAttribute("type")) toggle.setAttribute("type", "button");
+        if (!toggle.hasAttribute("aria-expanded")) toggle.setAttribute("aria-expanded", "false");
+
+        toggle.addEventListener("click", () => {
+          const isOpen = nav.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+    }
+
+    loadNav("contact");
+  </script>
+
+</body>
+</html>
