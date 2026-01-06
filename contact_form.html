@@ -34,31 +34,34 @@
           I’d love to hear from you. Please fill out the form below and I’ll get back to you as soon as I can.
         </p>
 
+        <!-- ⭐ IMPORTANT: Replace the action URL with your Formspree endpoint -->
         <form
           class="contact-form"
-          action="mailto:aetherinstruments@gmail.com"
+          action="https://formspree.io/f/mzdznbnq"
           method="POST"
-          enctype="text/plain"
         >
           <div class="form-group">
             <label for="name">Name *</label>
-            <input type="text" id="name" name="Name" required>
+            <input type="text" id="name" name="name" required>
           </div>
 
           <div class="form-group">
             <label for="email">Contact Email *</label>
-            <input type="email" id="email" name="Email" required>
+            <input type="email" id="email" name="email" required>
           </div>
 
           <div class="form-group">
             <label for="phone">Phone Number (Optional)</label>
-            <input type="tel" id="phone" name="Phone">
+            <input type="tel" id="phone" name="phone">
           </div>
 
           <div class="form-group">
             <label for="message">Message *</label>
-            <textarea id="message" name="Message" rows="6" required></textarea>
+            <textarea id="message" name="message" rows="6" required></textarea>
           </div>
+
+          <!-- (Optional) Thank-You redirect page -->
+          <!-- <input type="hidden" name="_redirect" value="https://aetherinstruments.com/thankyou.html"> -->
 
           <button type="submit">
             Send Message
