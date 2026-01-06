@@ -392,3 +392,41 @@ nav.main-nav .nav-toggle {
     max-width: 420px;
   }
 }
+
+.contact-form {
+  display: block;
+}
+
+.contact-form .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.contact-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: #8b6ec5;
+  box-shadow: 0 0 0 2px rgba(139,110,197,0.15);
+}
+
+.contact-form button {
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
